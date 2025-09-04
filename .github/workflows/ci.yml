@@ -48,7 +48,7 @@ jobs:
           path: |
             .venv
             ~/.cache/pypoetry
-          key: ${{ runner.os }}-py311-poetry1.8.3-${{ hashFiles('**/poetry.lock') }}
+          key: ${{ runner.os }}-py311-poetry1.8.3-${{ hashFiles('**/poetry.lock') }}-v2
           restore-keys: |
             ${{ runner.os }}-py311-poetry1.8.3-
 
