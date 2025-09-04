@@ -54,7 +54,7 @@ jobs:
 
       # 7) 📥 Installation des dépendances + ton package (src layout)
       - name: Install dependencies
-        run: poetry install --no-interaction --no-ansi
+        run: poetry install 
 
       # 8) 🎨 Vérification qualité du code (facultatif si tu veux du linting)
       - name: Run code quality checks
