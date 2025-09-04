@@ -1,0 +1,29 @@
+# Environnements virtuels
+.venv/
+env/
+venv/
+
+# Python cache & artefacts
+__pycache__/
+*.py[cod]
+*.so
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Données locales
+incrementaltraining/data/*
+
+
+# Caches de tests et d’outils
+.mypy_cache/
+.pytest_cache/
+.cache/
+.ruff_cache/
+
+# Logs & artefacts internes
+#incrementaltraining/logs/*
+#incrementaltraining/notebooks/*
+incrementaltraining/utils/*
+
+
