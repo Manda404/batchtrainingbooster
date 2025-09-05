@@ -28,10 +28,7 @@ def setup_logger(name: str, log_path: str = ROOT_DIR_LOGS, level: int = INFO):
     logger = getLogger(name)
 
     if not logger.handlers:
-
-        formatter = Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
         # create the log folder
         makedirs(log_path, exist_ok=True)
@@ -39,7 +36,9 @@ def setup_logger(name: str, log_path: str = ROOT_DIR_LOGS, level: int = INFO):
 
         # Console handler
         handler = RotatingFileHandler(
-            log_file, maxBytes=5 * 1024 * 1024, backupCount=5  # 5 MB
+            log_file,
+            maxBytes=5 * 1024 * 1024,
+            backupCount=5,  # 5 MB
         )
         handler.setFormatter(formatter)
         logger.addHandler(handler)

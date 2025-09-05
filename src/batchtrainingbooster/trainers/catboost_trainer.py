@@ -86,7 +86,9 @@ class CatBoostTrainer(BatchTrainer):
             valid_curve = model.get_evals_result()["validation_1"][eval_metric]
             train_loss, valid_loss = train_curve[-1], valid_curve[-1]
 
-            self.logger.info(f"Train Loss: {train_loss:.5f} | Valid Loss: {valid_loss:.5f}")
+            self.logger.info(
+                f"Train Loss: {train_loss:.5f} | Valid Loss: {valid_loss:.5f}"
+            )
             self.global_train_loss.append(train_curve)
             self.global_valid_loss.append(valid_curve)
             self.global_iterations.append(batch_id)
