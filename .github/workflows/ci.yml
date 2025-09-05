@@ -28,6 +28,9 @@ jobs:
       POETRY_VIRTUALENVS_IN_PROJECT: "true"     # 📦 venv local (.venv)
       PYTHONPATH: ${{ github.workspace }}/src   # 🛠️ Permet d'importer ton code src/
       SPARK_LOCAL_IP: 127.0.0.1                 # 🌐 Évite les soucis réseau Spark
+      PYTHONWARNINGS: "ignore::DeprecationWarning"  # 🙈 Cache les DeprecationWarning Python
+      JUPYTER_PLATFORM_DIRS: "1"                # ✅ Supprime l’avertissement jupyter_client
+      # SPARK_CONF_DIR: ${{ github.workspace }}/tests/resources  # 📁 (Optionnel) si tu ajoutes log4j2.properties
       # SPARK_SUBMIT_OPTS: "-Dlog4j2.formatMsgNoLookups=true -Dorg.apache.logging.log4j.simplelog.StatusLogger.level=OFF"
       # (décommente si tu veux réduire le bruit des logs Spark)
 
@@ -80,7 +83,7 @@ jobs:
 
       # 8) 🎨 Vérification de la qualité du code
       # 👉 Choisis UNE stratégie : Ruff fait tout (format + lint) OU Black + Ruff.
-      
+
       ## Option A : Ruff fait formatage + lint
       - name: Code quality (Ruff format + lint)
         run: |
@@ -109,6 +112,7 @@ jobs:
       - name: Run unit tests (unittest)
         env:
           PYSPARK_PYTHON: python   # Simplifie l’appel de PySpark
+          # SPARK_CONF_DIR: ${{ github.workspace }}/tests/resources  # 📁 (Optionnel) si tu ajoutes log4j2.properties
         run: |
           echo "🧪 Exécution des tests unitaires..."
           poetry run python -m unittest discover -s tests -p "test_*.py" -v
