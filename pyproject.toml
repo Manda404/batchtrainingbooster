@@ -9,6 +9,8 @@ authors = ["Manda Surel <s239150.eps@gmail.com>"]
 readme = "README.md"
 packages = [{ include = "batchtrainingbooster", from = "src" }]
 
+# Inclure le marqueur dans les artefacts
+include = ["src/batchtrainingbooster/py.typed"]
 # ============================================================
 # DÉPENDANCES PRINCIPALES
 # ============================================================
