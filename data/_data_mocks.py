@@ -1,0 +1,81 @@
+from dataclasses import dataclass
+
+
+@dataclass
+class ObesityRow:
+    Age: float
+    Gender: str
+    Height: float
+    Weight: float
+    FAVC: str
+    FCVC: float
+    NCP: float
+    SCC: str
+    SMOKE: str
+    CH2O: float
+    family_history_with_overweight: str
+    FAF: float
+    TUE: float
+    CAEC: str
+    CALC: float
+    MTRANS: str
+    NObeyesdad: str
+
+
+# 👇 50 rows de mock
+MOCK_ROWS = [
+    ObesityRow(21.0,"Female",1.62,64.0,"no",2.0,3.0,"no","no",2.0,"no",2.0,1.0,"Sometimes",0.0,"Public_Transportation","Normal_Weight"),
+    ObesityRow(27.0,"Male",1.80,87.0,"Frequently",3.0,3.0,"no","no",2.0,"no",2.0,0.0,"Sometimes",2.0,"Walking","Overweight_Level_I"),
+    ObesityRow(35.0,"Female",1.70,95.0,"yes",2.5,4.0,"yes","no",1.5,"yes",0.0,0.0,"Always",3.0,"Automobile","Obesity_Type_I"),
+    ObesityRow(42.0,"Male",1.75,120.0,"yes",1.0,5.0,"yes","no",1.0,"yes",0.5,0.0,"Frequently",3.0,"Automobile","Obesity_Type_II"),
+    ObesityRow(18.0,"Female",1.55,48.0,"no",3.0,3.0,"no","no",3.0,"no",3.0,1.0,"Sometimes",0.0,"Walking","Underweight"),
+    ObesityRow(25.0,"Male",1.83,72.0,"no",3.0,4.0,"no","no",2.5,"no",3.0,1.0,"no",0.0,"Public_Transportation","Normal_Weight"),
+    ObesityRow(29.0,"Female",1.60,82.0,"yes",2.0,3.0,"no","yes",1.5,"yes",1.0,2.0,"Frequently",2.0,"Automobile","Overweight_Level_II"),
+    ObesityRow(33.0,"Male",1.78,110.0,"yes",1.0,5.0,"yes","no",1.0,"yes",0.5,0.5,"Always",3.0,"Automobile","Obesity_Type_III"),
+    ObesityRow(22.0,"Female",1.68,58.0,"no",3.0,3.0,"no","no",2.0,"no",2.0,1.0,"Sometimes",0.0,"Bike","Normal_Weight"),
+    ObesityRow(40.0,"Male",1.82,105.0,"yes",2.0,4.0,"yes","no",1.5,"yes",0.5,0.0,"Frequently",2.0,"Public_Transportation","Obesity_Type_I"),
+    # 👉 On continue à varier pour remplir jusqu’à 50
+    ObesityRow(24.0,"Female",1.59,65.0,"no",3.0,3.0,"no","no",2.5,"no",2.0,1.0,"Sometimes",0.0,"Walking","Normal_Weight"),
+    ObesityRow(31.0,"Male",1.85,95.0,"yes",2.0,4.0,"no","no",2.0,"yes",1.5,0.5,"Frequently",2.0,"Automobile","Overweight_Level_II"),
+    ObesityRow(28.0,"Female",1.65,54.0,"no",3.0,3.0,"no","no",2.5,"no",2.5,1.0,"Sometimes",0.0,"Bike","Normal_Weight"),
+    ObesityRow(37.0,"Male",1.77,118.0,"yes",1.5,5.0,"yes","no",1.0,"yes",0.5,0.0,"Always",3.0,"Automobile","Obesity_Type_II"),
+    ObesityRow(19.0,"Female",1.52,46.0,"no",3.0,3.0,"no","no",3.0,"no",3.0,1.0,"no",0.0,"Walking","Underweight"),
+    ObesityRow(34.0,"Male",1.80,100.0,"yes",2.5,4.0,"yes","yes",1.5,"yes",1.0,0.0,"Frequently",2.0,"Public_Transportation","Overweight_Level_I"),
+    ObesityRow(26.0,"Female",1.63,70.0,"no",3.0,3.0,"no","no",2.0,"no",2.0,1.0,"Sometimes",0.0,"Public_Transportation","Normal_Weight"),
+    ObesityRow(41.0,"Male",1.79,130.0,"yes",1.0,5.0,"yes","no",1.0,"yes",0.0,0.0,"Always",3.0,"Automobile","Obesity_Type_III"),
+    ObesityRow(30.0,"Female",1.72,78.0,"no",2.5,4.0,"no","no",2.5,"no",2.0,1.0,"Sometimes",0.0,"Bike","Overweight_Level_I"),
+    ObesityRow(38.0,"Male",1.76,92.0,"yes",2.0,3.0,"no","no",2.0,"yes",1.0,0.5,"Frequently",1.0,"Automobile","Overweight_Level_II"),
+    ObesityRow(20.0,"Female",1.58,50.0,"no",3.0,3.0,"no","no",3.0,"no",2.5,1.0,"Sometimes",0.0,"Walking","Normal_Weight"),
+    ObesityRow(36.0,"Male",1.82,115.0,"yes",1.5,4.0,"yes","yes",1.0,"yes",0.5,0.0,"Always",3.0,"Automobile","Obesity_Type_II"),
+    ObesityRow(23.0,"Female",1.60,55.0,"no",3.0,3.0,"no","no",2.5,"no",2.0,1.0,"no",0.0,"Bike","Normal_Weight"),
+    ObesityRow(39.0,"Male",1.75,122.0,"yes",1.0,5.0,"yes","no",1.0,"yes",0.0,0.0,"Always",3.0,"Automobile","Obesity_Type_III"),
+    ObesityRow(32.0,"Female",1.68,85.0,"yes",2.0,4.0,"no","no",2.0,"yes",1.0,0.5,"Frequently",2.0,"Automobile","Overweight_Level_I"),
+    ObesityRow(45.0,"Male",1.80,140.0,"yes",1.0,5.0,"yes","no",1.0,"yes",0.0,0.0,"Always",3.0,"Automobile","Obesity_Type_III"),
+    ObesityRow(28.0,"Female",1.70,74.0,"no",3.0,3.0,"no","no",2.0,"no",2.0,1.0,"Sometimes",0.0,"Walking","Normal_Weight"),
+    ObesityRow(29.0,"Male",1.85,90.0,"yes",2.5,4.0,"no","no",2.5,"no",1.5,0.5,"Sometimes",2.0,"Public_Transportation","Overweight_Level_I"),
+    ObesityRow(27.0,"Female",1.66,69.0,"no",3.0,3.0,"no","no",2.5,"no",2.0,1.0,"Sometimes",0.0,"Bike","Normal_Weight"),
+    ObesityRow(35.0,"Male",1.83,108.0,"yes",2.0,4.0,"yes","no",1.5,"yes",1.0,0.5,"Frequently",2.0,"Automobile","Overweight_Level_II"),
+    ObesityRow(22.0,"Female",1.59,52.0,"no",3.0,3.0,"no","no",3.0,"no",2.5,1.0,"Sometimes",0.0,"Walking","Normal_Weight"),
+    ObesityRow(44.0,"Male",1.81,125.0,"yes",1.0,5.0,"yes","no",1.0,"yes",0.0,0.0,"Always",3.0,"Automobile","Obesity_Type_III"),
+    ObesityRow(26.0,"Female",1.67,73.0,"no",2.5,3.0,"no","no",2.5,"no",2.0,1.0,"Sometimes",0.0,"Public_Transportation","Normal_Weight"),
+    ObesityRow(37.0,"Male",1.79,100.0,"yes",2.0,4.0,"yes","no",2.0,"yes",1.0,0.5,"Frequently",2.0,"Automobile","Overweight_Level_I"),
+    ObesityRow(21.0,"Female",1.61,56.0,"no",3.0,3.0,"no","no",3.0,"no",2.5,1.0,"Sometimes",0.0,"Bike","Normal_Weight"),
+    ObesityRow(40.0,"Male",1.78,118.0,"yes",1.5,5.0,"yes","no",1.0,"yes",0.5,0.0,"Always",3.0,"Automobile","Obesity_Type_II"),
+    ObesityRow(23.0,"Female",1.64,60.0,"no",3.0,3.0,"no","no",2.5,"no",2.0,1.0,"no",0.0,"Walking","Normal_Weight"),
+    ObesityRow(42.0,"Male",1.82,132.0,"yes",1.0,5.0,"yes","no",1.0,"yes",0.0,0.0,"Always",3.0,"Automobile","Obesity_Type_III"),
+    ObesityRow(25.0,"Female",1.69,68.0,"no",3.0,3.0,"no","no",2.0,"no",2.0,1.0,"Sometimes",0.0,"Public_Transportation","Normal_Weight"),
+    ObesityRow(36.0,"Male",1.80,102.0,"yes",2.5,4.0,"yes","no",1.5,"yes",1.0,0.5,"Frequently",2.0,"Automobile","Overweight_Level_I"),
+    ObesityRow(20.0,"Female",1.57,50.0,"no",3.0,3.0,"no","no",3.0,"no",2.5,1.0,"Sometimes",0.0,"Walking","Normal_Weight"),
+    ObesityRow(39.0,"Male",1.84,128.0,"yes",1.0,5.0,"yes","no",1.0,"yes",0.0,0.0,"Always",3.0,"Automobile","Obesity_Type_III"),
+    ObesityRow(31.0,"Female",1.65,70.0,"no",3.0,3.0,"no","no",2.5,"no",2.0,1.0,"Sometimes",0.0,"Bike","Normal_Weight"),
+    ObesityRow(34.0,"Male",1.77,96.0,"yes",2.0,4.0,"yes","no",2.0,"yes",1.0,0.5,"Frequently",2.0,"Automobile","Overweight_Level_II"),
+    ObesityRow(22.0,"Female",1.60,55.0,"no",3.0,3.0,"no","no",2.5,"no",2.0,1.0,"no",0.0,"Walking","Normal_Weight"),
+    ObesityRow(45.0,"Male",1.85,140.0,"yes",1.0,5.0,"yes","no",1.0,"yes",0.0,0.0,"Always",3.0,"Automobile","Obesity_Type_III"),
+    ObesityRow(27.0,"Female",1.68,72.0,"no",3.0,3.0,"no","no",2.5,"no",2.0,1.0,"Sometimes",0.0,"Public_Transportation","Normal_Weight"),
+    ObesityRow(33.0,"Male",1.81,110.0,"yes",2.5,4.0,"yes","no",2.0,"yes",1.0,0.5,"Frequently",2.0,"Automobile","Overweight_Level_I"),
+]
+
+
+def create_sparkdf(spark):
+    """Créer un DataFrame Spark à partir de la dataclass ObesityRow."""
+    return spark.createDataFrame(MOCK_ROWS)
