@@ -21,12 +21,12 @@ jobs:
         with:
           python-version: "3.11"
 
-      # 3) ☕ Installation de Java (nécessaire pour PySpark)
-      - name: Set up Java 11
+      # 3) ☕ Installation de Java (MISE À JOUR : Java 17 pour PySpark 4.x)
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin   # OpenJDK Temurin (stable et gratuit)
-          java-version: "11"
+          java-version: "17"      # ✅ Changé de "11" à "17"
 
       # 4) 📦 Installation de Poetry
       - name: Install Poetry
