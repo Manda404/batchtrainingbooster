@@ -2,31 +2,53 @@ name: CI - BatchTrainingBooster
 
 on:
   push:                       # 🚀 Lancement sur push
-    branches: [ main, feature/* ]
+    branches: [ "main", "feature/**" ]
   pull_request:               # 🔁 Lancement sur PR
-    branches: [ main ]
+    branches: [ "main" ]
+
+# ⚡ Empêche plusieurs workflows concurrents sur la même branche
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   tests:
     runs-on: ubuntu-latest    # 🐧 Runner GitHub (Linux)
 
+    strategy:
+      fail-fast: false        # ❌ Ne coupe pas tous les jobs si un échoue
+      matrix:
+        python-version: [ "3.11" ]   # 🐍 Version Python testée (ajoute "3.12" plus tard si besoin)
+        include:
+          - python-version: "3.11"
+            java-version: "17"       # ☕ Version Java compatible PySpark 4.x
+
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"        # 🔇 Pas de check pip inutile
+      POETRY_VIRTUALENVS_IN_PROJECT: "true"     # 📦 venv local (.venv)
+      PYTHONPATH: ${{ github.workspace }}/src   # 🛠️ Permet d'importer ton code src/
+      SPARK_LOCAL_IP: 127.0.0.1                 # 🌐 Évite les soucis réseau Spark
+      # SPARK_SUBMIT_OPTS: "-Dlog4j2.formatMsgNoLookups=true -Dorg.apache.logging.log4j.simplelog.StatusLogger.level=OFF"
+      # (décommente si tu veux réduire le bruit des logs Spark)
+
     steps:
-      # 1) 📂 Récupération du code
+      # 1) 📂 Récupération du code source
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2) 🐍 Installation de Python (3.11, comme ton pyproject.toml)
+      # 2) 🐍 Installation de Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"   # 📦 Cache pip global
 
-      # 3) ☕ Installation de Java (MISE À JOUR : Java 17 pour PySpark 4.x)
-      - name: Set up Java 17
+      # 3) ☕ Installation de Java (Temurin 17)
+      - name: Set up Java (Temurin ${{ matrix.java-version }})
         uses: actions/setup-java@v4
         with:
-          distribution: temurin   # OpenJDK Temurin (stable et gratuit)
-          java-version: "17"      # ✅ Changé de "11" à "17"
+          distribution: temurin
+          java-version: ${{ matrix.java-version }}
 
       # 4) 📦 Installation de Poetry
       - name: Install Poetry
@@ -34,8 +56,8 @@ jobs:
         with:
           poetry-version: "1.8.3"
 
-      # 5) ⚙️ Configuration de l'environnement virtuel Poetry
-      - name: Configure Poetry virtualenv
+      # 5) ⚙️ Configuration de Poetry
+      - name: Configure Poetry
         run: |
           poetry config virtualenvs.create true
           poetry config virtualenvs.in-project true
@@ -48,34 +70,58 @@ jobs:
           path: |
             .venv
             ~/.cache/pypoetry
-          key: ${{ runner.os }}-py311-poetry1.8.3-${{ hashFiles('**/poetry.lock') }}-v3
+          key: ${{ runner.os }}-py${{ matrix.python-version }}-poetry1.8.3-${{ hashFiles('**/poetry.lock') }}-v4
           restore-keys: |
-            ${{ runner.os }}-py311-poetry1.8.3-
+            ${{ runner.os }}-py${{ matrix.python-version }}-poetry1.8.3-
 
-      # 7) 📥 Installation des dépendances + ton package (src layout)
-      - name: Install dependencies (with dev)  # ✅ Ajout : installe aussi le groupe dev (ruff, black, mypy)
+      # 7) 📥 Installation des dépendances (y compris dev : ruff, black, mypy, pytest...)
+      - name: Install dependencies (main + dev)
         run: poetry install --no-interaction --no-ansi --no-root --with dev
 
-      # 8) 🎨 Vérification qualité du code (formatage → lint → types)
-      - name: Run code quality checks
+      # 8) 🎨 Vérification de la qualité du code
+      # 👉 Choisis UNE stratégie : Ruff fait tout (format + lint) OU Black + Ruff.
+      
+      ## Option A : Ruff fait formatage + lint
+      - name: Code quality (Ruff format + lint)
         run: |
-          echo "🎨 Vérification du formatage avec Black..."
-          poetry run black --check src
-          
           echo "🎨 Vérification du formatage avec Ruff..."
-          poetry run ruff format --check src
+          poetry run ruff format --check src tests
           
           echo "🔍 Vérification du linting avec Ruff..."
-          poetry run ruff check src
-          
-          echo "🏷️  Vérification des types avec mypy..."
-          #poetry run mypy --explicit-package-bases src
+          poetry run ruff check src tests --output-format=github
 
-      # 9) 🧪 Lancement des tests unitaires avec PySpark + pytest
-      - name: Run unit tests
+      ## Option B (si tu préfères Black + Ruff, décommente et commente Option A ci-dessus)
+      # - name: Code quality (Black + Ruff)
+      #   run: |
+      #     echo "🎨 Vérification du formatage avec Black..."
+      #     poetry run black --check src tests
+      #
+      #     echo "🔍 Vérification du linting avec Ruff..."
+      #     poetry run ruff check src tests --output-format=github
+
+      # 9) 🏷️ Vérification des types avec mypy
+      - name: Type checking (mypy)
+        run: |
+          echo "🏷️ Vérification des types avec mypy..."
+          poetry run mypy --python-version ${{ matrix.python-version }} --explicit-package-bases src
+
+      # 10) 🧪 Lancement des tests unitaires
+      - name: Run unit tests (unittest)
         env:
-          PYSPARK_PYTHON: python  # Simplifié - Poetry gère déjà l'env
-          SPARK_LOCAL_IP: 127.0.0.1
-          # Évite les warnings PySpark en CI
-          PYTHONPATH: ${{ github.workspace }}/src
-        run: poetry run python -m unittest discover -s tests -p "test_*.py" -v
+          PYSPARK_PYTHON: python   # Simplifie l’appel de PySpark
+        run: |
+          echo "🧪 Exécution des tests unitaires..."
+          poetry run python -m unittest discover -s tests -p "test_*.py" -v
+
+      # 11) 📊 (Bonus futur) Rapports de tests / couverture
+      # - name: Run tests (pytest + coverage)
+      #   run: |
+      #     poetry run pytest -q --maxfail=1 --disable-warnings \
+      #       --junitxml=reports/junit.xml --cov=src --cov-report=xml:reports/coverage.xml
+      #
+      # - name: Upload test reports
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: unit-test-reports
+      #     path: reports/
