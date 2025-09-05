@@ -53,20 +53,20 @@ jobs:
             ${{ runner.os }}-py311-poetry1.8.3-
 
       # 7) 📥 Installation des dépendances + ton package (src layout)
-      - name: Install dependencies
-        run: poetry install --no-interaction --no-ansi
+      - name: Install dependencies (with dev)  # ✅ Ajout : installe aussi le groupe dev (ruff, black, mypy)
+        run: poetry install --no-interaction --no-ansi --no-root --with dev
 
-      # 8) 🎨 Vérification qualité du code (facultatif si tu veux du linting)
+      # 8) 🎨 Vérification qualité du code (formatage → lint → types)
       - name: Run code quality checks
         run: |
-          # Vérifications en CI ===> Vérification du formatage
+          # ✅ Vérification du formatage
           poetry run black --check src tests
-          poetry run ruff format --check src tests
+          poetry run ruff format --check src tests   # ✅ Ajout : check du formatter Ruff
 
-          # Vérification du linting
+          # ✅ Vérification du linting (imports + règles lint)
           poetry run ruff check src tests
 
-          # Vérification des types
+          # ✅ Vérification des types
           poetry run mypy src tests
 
       # 9) 🧪 Lancement des tests unitaires avec PySpark + pytest
