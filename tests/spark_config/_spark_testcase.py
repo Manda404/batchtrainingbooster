@@ -1,16 +1,14 @@
-# config_spark/_spark_testcase.py
-import gc
-import unittest
-import warnings
-
+from gc import collect
+from unittest import TestCase
+from warnings import filterwarnings, ResourceWarning
 from pyspark.sql import SparkSession
 
 
-class SparkTestCase(unittest.TestCase):
+class SparkTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         # Option : ignorer les ResourceWarning (sockets Py4J lors de l’extinction)
-        warnings.filterwarnings("ignore", category=ResourceWarning)
+        filterwarnings("ignore", category=ResourceWarning)
 
         cls.spark = (
             SparkSession.builder.master("local[*]")
@@ -30,4 +28,4 @@ class SparkTestCase(unittest.TestCase):
         # Stoppe Spark proprement
         cls.spark.stop()
         # Aide le GC à fermer les sockets Py4J rapidement
-        gc.collect()
+        collect()
