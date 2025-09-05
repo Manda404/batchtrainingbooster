@@ -1,4 +1,3 @@
-from copy import deepcopy
 from typing import Optional
 from catboost import CatBoostClassifier  # type: ignore
 from pyspark.sql import DataFrame as SparkDataFrame

@@ -1,4 +1,4 @@
-from typing import List, Generator, Optional, Union
+from typing import List, Generator, Optional
 from numpy import cumsum
 from pyspark.sql import Window
 from abc import ABC, abstractmethod
