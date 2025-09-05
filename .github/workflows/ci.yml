@@ -69,7 +69,7 @@ jobs:
           poetry run ruff check src tests
           
           echo "🏷️  Vérification des types avec mypy..."
-          poetry run mypy --explicit-package-bases src tests
+          poetry run mypy --explicit-package-bases --ignore-missing-imports src tests  # ✅ Ajout : ignore les imports manquants (ex: PySpark)
 
       # 9) 🧪 Lancement des tests unitaires avec PySpark + pytest
       - name: Run unit tests
