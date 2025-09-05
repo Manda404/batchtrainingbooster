@@ -85,10 +85,10 @@ jobs:
       - name: Code quality (Ruff format + lint)
         run: |
           echo "🎨 Vérification du formatage avec Ruff..."
-          poetry run ruff format --check src --output-format=github
+          poetry run ruff format --check src
           
           echo "🔍 Vérification du linting avec Ruff..."
-          poetry run ruff check src --output-format=github
+          poetry run ruff check src
 
       ## Option B (si tu préfères Black + Ruff, décommente et commente Option A ci-dessus)
       # - name: Code quality (Black + Ruff)
