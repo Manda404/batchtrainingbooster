@@ -1,12 +1,10 @@
 from pandas import Series
-from typing import Tuple, Union
 from copy import deepcopy
-
+from typing import Tuple, Union
 from xgboost import XGBClassifier
-from sklearn.pipeline import Pipeline
 from pyspark.sql import DataFrame as SparkDataFrame
 from pandas import DataFrame as PandasDataFrame
-from incrementaltraining.core import BatchTrainer
+from batchtrainingbooster.core import BatchTrainer
 from numpy import ndarray, asarray, unique, vectorize
 from sklearn.utils.class_weight import compute_class_weight
 from matplotlib.pyplot import (
@@ -24,8 +22,8 @@ from matplotlib.pyplot import (
 class XGBoostTrainer(BatchTrainer):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.global_train_loss: list[float] = []  # keep track of training loss
-        self.global_valid_loss: list[float] = []  # keep track of validation loss
+        self.global_train_loss: list[list[float]] = []  # keep track of training loss
+        self.global_valid_loss: list[list[float]] = []  # keep track of validation loss
         self.global_iterations: list[int] = []  # keep track of iterations
         self.model = None
         self.lr_schedulers: list[float] = []
@@ -156,7 +154,6 @@ class XGBoostTrainer(BatchTrainer):
         train_dataframe: SparkDataFrame,
         valid_dataframe: SparkDataFrame,
         target_column: str,
-        pipeline: Union[Pipeline, None] = None,
         **kwargs,
     ):
         if train_dataframe is None and valid_dataframe is None:
@@ -172,12 +169,12 @@ class XGBoostTrainer(BatchTrainer):
 
         # Create a generator for the training dataframe
         dataframe_generator = self._apply_pandas_processing_to_generator(
-            train_dataframe, target_column, pipeline, num_batches
+            train_dataframe, target_column, num_batches
         )
 
         # process the evaluation dataframe
         valid_dataframe = self._apply_pandas_processing_to_validation_set(
-            valid_dataframe, pipeline
+            valid_dataframe,
         )
         valid_dataframe, cat_is_present = self.convert_object_to_category_dtype(
             valid_dataframe, target_column
@@ -319,6 +316,5 @@ class XGBoostTrainer(BatchTrainer):
         self,
         dataframe: SparkDataFrame,
         target_column: str,
-        pipeline: Union[Pipeline, None] = None,
     ):
         pass

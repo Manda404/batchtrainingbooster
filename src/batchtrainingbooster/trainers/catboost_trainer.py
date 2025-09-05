@@ -1,5 +1,4 @@
 from copy import deepcopy
-from typing import Union
 from catboost import CatBoostClassifier
 from pyspark.sql import DataFrame as SparkDataFrame
 from batchtrainingbooster.core import BatchTrainer
@@ -8,9 +7,11 @@ from batchtrainingbooster.core import BatchTrainer
 class CatBoostTrainer(BatchTrainer):
     def __init__(self):
         super().__init__()
-        self.global_train_loss = []  # keep track of training loss
-        self.global_valid_loss = []  # keep track of validation loss
-        self.global_iterations = []  # keep track of iterations
+        self.global_train_loss: list[list[float]] = []  # keep track of training loss
+        self.global_valid_loss: list[list[float]] = []  # keep track of validation loss
+        self.global_iterations: list[int] = []  # keep track of iterations
+        self.model = None
+        self.lr_schedulers: list[float] = []
 
     def fit(
         self,
@@ -32,7 +33,7 @@ class CatBoostTrainer(BatchTrainer):
         # initialize best and previous model, to search optimal performances
         best_model, previous_model = None, None
         eval_metric = kwargs.get("config_model", {}).get("eval_metric", "Logloss")
-        max_patience = kwargs.get("config_training", {}).get("max_patience", 5)  
+        max_patience = kwargs.get("config_training", {}).get("max_patience", 5)
         best_valid_loss, patience_counter = float("inf"), 0
         config_model = kwargs.get("config_model", {})
 
@@ -82,7 +83,9 @@ class CatBoostTrainer(BatchTrainer):
             valid_curve = model.get_evals_result()["validation_1"][eval_metric]
             train_loss, valid_loss = train_curve[-1], valid_curve[-1]
 
-            self.logger.info(f"Train Loss: {train_loss:.5f} | Valid Loss: {valid_loss:.5f}")
+            self.logger.info(
+                f"Train Loss: {train_loss:.5f} | Valid Loss: {valid_loss:.5f}"
+            )
             self.global_train_loss.append(train_curve)
             self.global_valid_loss.append(valid_curve)
             self.global_iterations.append(batch_id)
