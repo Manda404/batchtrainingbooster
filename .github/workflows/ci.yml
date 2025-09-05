@@ -106,7 +106,7 @@ jobs:
       - name: Type checking (mypy)
         run: |
           echo "🏷️ Vérification des types avec mypy..."
-          poetry run mypy --python-version ${{ matrix.python-version }} --explicit-package-bases src
+          poetry run mypy --python-version ${{ matrix.python-version }} --explicit-package-bases --check-untyped-defs src
 
       # 10) 🧪 Lancement des tests unitaires
       - name: Run unit tests (unittest)

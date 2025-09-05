@@ -1,8 +1,9 @@
-from typing import List
+from typing import List, Generator, Optional, Union
 from numpy import cumsum
 from pyspark.sql import Window
 from abc import ABC, abstractmethod
-from logger.logger import setup_logger
+# CORRECTION: Changez l'import du logger
+from batchtrainingbooster.logger.logger import setup_logger  # Import corrigé
 from pandas import DataFrame as PandasDataFrame
 from pyspark.sql import DataFrame as SparkDataFrame
 from pyspark.sql.functions import col, ntile, rand
@@ -26,7 +27,8 @@ class BatchTrainer(ABC):
     @abstractmethod
     def fit(
         self,
-        dataframe: SparkDataFrame,
+        train_dataframe: Optional[SparkDataFrame],
+        valid_dataframe: Optional[SparkDataFrame],
         target_column: str,
         **kwargs,
     ):
@@ -41,7 +43,7 @@ class BatchTrainer(ABC):
     ):
         pass
 
-    def _create_and_apply_batches(self, dataframe, target_column: str, **kwargs):
+    def _create_and_apply_batches(self, dataframe: SparkDataFrame, target_column: str, **kwargs) -> SparkDataFrame:
         """
         Create balanced batches per target class using ntile over a random order.
 
@@ -75,14 +77,13 @@ class BatchTrainer(ABC):
         dataframe: SparkDataFrame,
         batch_column: str,
         num_batches: int,
-    ) -> PandasDataFrame:
+    ) -> Generator[PandasDataFrame, None, None]:  # CORRECTION: Type de retour corrigé
         """
         Apply pandas processing to a Spark DataFrame in a streaming fashion.
 
         Args:
             dataframe (SparkDataFrame): The input Spark DataFrame.
             batch_column (str): The column used for batching.
-            pipeline (Union[Pipeline, None]): The sklearn pipeline to apply.
             num_batches (int): The number of batches to create.
 
         Yields:
@@ -104,7 +105,8 @@ class BatchTrainer(ABC):
             self.logger.info(
                 f"Converting Spark DataFrame to pandas DataFrame for batch {batch_id}"
             )
-            pandas_df = batch_dataframe.toPandas().drop(columns=["batch_id"])
+            # CORRECTION: Utilisation correcte de drop avec *args
+            pandas_df = batch_dataframe.toPandas().drop("batch_id", axis=1)
 
             yield pandas_df
 
