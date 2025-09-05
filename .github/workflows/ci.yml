@@ -78,4 +78,4 @@ jobs:
           SPARK_LOCAL_IP: 127.0.0.1
           # Évite les warnings PySpark en CI
           PYTHONPATH: ${{ github.workspace }}/src
-        run: poetry run pytest -v --maxfail=1 --disable-warnings
+        run: poetry run python -m unittest discover -s tests -p "test_*.py" -v
