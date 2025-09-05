@@ -1,7 +1,6 @@
-from spark_config._spark_testcase import SparkTestCase
 from data._data_mocks import create_sparkdf
-from src.batchtrainingbooster.spark_transform.spark_transform import add_bmi
-
+from spark_config._spark_testcase import SparkTestCase
+from batchtrainingbooster.spark_transform.spark_transform import add_bmi
 
 class TestAddBMI(SparkTestCase):
     def test_adds_bmi_when_cols_exist(self):
