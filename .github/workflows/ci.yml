@@ -59,15 +59,17 @@ jobs:
       # 8) 🎨 Vérification qualité du code (formatage → lint → types)
       - name: Run code quality checks
         run: |
-          # ✅ Vérification du formatage
+          echo "🎨 Vérification du formatage avec Black..."
           poetry run black --check src tests
-          poetry run ruff format --check src tests   # ✅ Ajout : check du formatter Ruff
-
-          # ✅ Vérification du linting (imports + règles lint)
+          
+          echo "🎨 Vérification du formatage avec Ruff..."
+          poetry run ruff format --check src tests
+          
+          echo "🔍 Vérification du linting avec Ruff..."
           poetry run ruff check src tests
-
-          # ✅ Vérification des types
-          poetry run mypy src tests
+          
+          echo "🏷️  Vérification des types avec mypy..."
+          poetry run mypy --explicit-package-bases src tests
 
       # 9) 🧪 Lancement des tests unitaires avec PySpark + pytest
       - name: Run unit tests
