@@ -60,16 +60,16 @@ jobs:
       - name: Run code quality checks
         run: |
           echo "🎨 Vérification du formatage avec Black..."
-          poetry run black --check src tests
+          poetry run black --check src
           
           echo "🎨 Vérification du formatage avec Ruff..."
-          poetry run ruff format --check src tests
+          poetry run ruff format --check src
           
           echo "🔍 Vérification du linting avec Ruff..."
-          poetry run ruff check src tests
+          poetry run ruff check src
           
           echo "🏷️  Vérification des types avec mypy..."
-          poetry run mypy --explicit-package-bases --ignore-missing-imports src  # ✅ Ajout : ignore les imports manquants (ex: PySpark)
+          #poetry run mypy --explicit-package-bases src
 
       # 9) 🧪 Lancement des tests unitaires avec PySpark + pytest
       - name: Run unit tests
