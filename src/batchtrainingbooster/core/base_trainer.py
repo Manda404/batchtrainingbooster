@@ -2,6 +2,7 @@ from typing import List, Generator, Optional, Union
 from numpy import cumsum
 from pyspark.sql import Window
 from abc import ABC, abstractmethod
+
 # CORRECTION: Changez l'import du logger
 from batchtrainingbooster.logger.logger import setup_logger  # Import corrigé
 from pandas import DataFrame as PandasDataFrame
@@ -43,7 +44,9 @@ class BatchTrainer(ABC):
     ):
         pass
 
-    def _create_and_apply_batches(self, dataframe: SparkDataFrame, target_column: str, **kwargs) -> SparkDataFrame:
+    def _create_and_apply_batches(
+        self, dataframe: SparkDataFrame, target_column: str, **kwargs
+    ) -> SparkDataFrame:
         """
         Create balanced batches per target class using ntile over a random order.
 

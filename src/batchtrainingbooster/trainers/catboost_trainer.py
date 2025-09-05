@@ -1,4 +1,3 @@
-
 from copy import deepcopy
 from typing import Optional
 from catboost import CatBoostClassifier  # type: ignore
@@ -21,25 +20,22 @@ class CatBoostTrainer(BatchTrainer):
         valid_dataframe: Optional[SparkDataFrame],
         target_column: str,
         **kwargs,
-    ) -> Optional[CatBoostClassifier]: 
-        
+    ) -> Optional[CatBoostClassifier]:
         # add number of batches then apply batch split
         num_batches = kwargs.get("num_batches", 10)
 
         if train_dataframe is None or valid_dataframe is None:
-            raise ValueError("train_dataframe cannot be None or valid_dataframe cannot be None")
-        
+            raise ValueError(
+                "train_dataframe cannot be None or valid_dataframe cannot be None"
+            )
+
         if num_batches <= 0:
             raise ValueError("num_batches must be >= 1")
-        
+
         if target_column not in train_dataframe.columns:
             raise ValueError(f"train_dataframe must contain '{target_column}' column")
-        
+
         if target_column not in valid_dataframe.columns:
             raise ValueError(f"valid_dataframe must contain '{target_column}' column")
-        
-        
-        
-        
-        return self.model
 
+        return self.model
