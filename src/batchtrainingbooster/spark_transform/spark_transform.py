@@ -8,5 +8,3 @@ def add_bmi(
     if height_col in df.columns and weight_col in df.columns:
         return df.withColumn("BMI", F.col(weight_col) / (F.col(height_col) ** 2))
     return df
-
-

@@ -59,10 +59,15 @@ jobs:
       # 8) 🎨 Vérification qualité du code (facultatif si tu veux du linting)
       - name: Run code quality checks
         run: |
+          # Vérifications en CI ===> Vérification du formatage
           poetry run black --check src tests
-          poetry run isort --check-only src tests
-          # Commenté pour éviter les erreurs si pas encore de code typé
-          # poetry run mypy src
+          poetry run ruff format --check src tests
+
+          # Vérification du linting
+          poetry run ruff check src tests
+
+          # Vérification des types
+          poetry run mypy src tests
 
       # 9) 🧪 Lancement des tests unitaires avec PySpark + pytest
       - name: Run unit tests
