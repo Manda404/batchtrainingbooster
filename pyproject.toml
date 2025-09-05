@@ -43,3 +43,7 @@ types-requests = "^2.32.4.20250809"
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.mypy]
+disable_error_code = ["import-untyped"]

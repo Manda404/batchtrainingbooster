@@ -1,10 +1,8 @@
-from typing import List, Generator, Optional
 from numpy import cumsum
 from pyspark.sql import Window
 from abc import ABC, abstractmethod
-
-# CORRECTION: Changez l'import du logger
-from batchtrainingbooster.logger.logger import setup_logger  # Import corrigé
+from typing import List, Generator, Optional
+from batchtrainingbooster.logger.logger import setup_logger
 from pandas import DataFrame as PandasDataFrame
 from pyspark.sql import DataFrame as SparkDataFrame
 from pyspark.sql.functions import col, ntile, rand
