@@ -1,11 +1,8 @@
 from copy import deepcopy
 from typing import Union
-
 from catboost import CatBoostClassifier
 from pyspark.sql import DataFrame as SparkDataFrame
-from sklearn.pipeline import Pipeline
-
-from incrementaltraining.core import BatchTrainer
+from batchtrainingbooster.core import BatchTrainer
 
 
 class CatBoostTrainer(BatchTrainer):
@@ -20,23 +17,22 @@ class CatBoostTrainer(BatchTrainer):
         train_dataframe: SparkDataFrame,
         valid_dataframe: SparkDataFrame,
         target_column: str,
-        pipeline: Union[Pipeline, None] = None,
         **kwargs,
     ):
         # add number of batches then apply batch split
         num_batches = kwargs.get("num_batches", 10)
         dataframe_generator = self._apply_pandas_processing_to_generator(
-            train_dataframe, target_column, pipeline, num_batches
+            train_dataframe, target_column, num_batches
         )
         # process the evalutation dateframe
         if valid_dataframe is not None:
             valid_dataframe = self._apply_pandas_processing_to_validation_set(
-                valid_dataframe, pipeline
+                valid_dataframe,
             )
         # initialize best and previous model, to search optimal performances
         best_model, previous_model = None, None
         eval_metric = kwargs.get("config_model", {}).get("eval_metric", "Logloss")
-        max_patience = kwargs.get("config_training", {}).get("max_patience", 5)
+        max_patience = kwargs.get("config_training", {}).get("max_patience", 5)  
         best_valid_loss, patience_counter = float("inf"), 0
         config_model = kwargs.get("config_model", {})
 
@@ -86,9 +82,7 @@ class CatBoostTrainer(BatchTrainer):
             valid_curve = model.get_evals_result()["validation_1"][eval_metric]
             train_loss, valid_loss = train_curve[-1], valid_curve[-1]
 
-            self.logger.info(
-                f"Train Loss: {train_loss:.5f} | Valid Loss: {valid_loss:.5f}"
-            )
+            self.logger.info(f"Train Loss: {train_loss:.5f} | Valid Loss: {valid_loss:.5f}")
             self.global_train_loss.append(train_curve)
             self.global_valid_loss.append(valid_curve)
             self.global_iterations.append(batch_id)
@@ -126,6 +120,5 @@ class CatBoostTrainer(BatchTrainer):
         self,
         dataframe: SparkDataFrame,
         target_column: str,
-        pipeline: Union[Pipeline, None] = None,
     ):
         pass
