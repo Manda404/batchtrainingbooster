@@ -23,7 +23,7 @@ batchtrainingbooster/notebooks/artifacts/*
 .DS_Store
 
 # Logs & artefacts internes
-artifacts/
+artifacts/*
 catboost_info/*
 batchtrainingbooster/utils/*
 batchtrainingbooster/src/batchtrainingbooster/logger/logs/*

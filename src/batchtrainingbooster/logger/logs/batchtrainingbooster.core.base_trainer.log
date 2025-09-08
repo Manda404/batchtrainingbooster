@@ -2705,3 +2705,114 @@ Stack trace:
 2025-09-08 17:22:33,995 - batchtrainingbooster.core.base_trainer - INFO - Total batches processed: 3
 2025-09-08 17:22:33,995 - batchtrainingbooster.core.base_trainer - INFO - Best validation loss: 0.50125
 2025-09-08 17:22:33,996 - batchtrainingbooster.core.base_trainer - INFO - Using best model
+2025-09-08 17:33:03,322 - batchtrainingbooster.core.base_trainer - INFO - Validating input parameters
+2025-09-08 17:33:03,440 - batchtrainingbooster.core.base_trainer - INFO - Preparing training data
+2025-09-08 17:33:03,441 - batchtrainingbooster.core.base_trainer - INFO - Preparing validation data
+2025-09-08 17:33:03,441 - batchtrainingbooster.core.base_trainer - INFO - Converting Spark DataFrame to pandas DataFrame for validation.
+2025-09-08 17:33:05,069 - batchtrainingbooster.core.base_trainer - INFO - Categorical features detected in validation set
+2025-09-08 17:33:05,070 - batchtrainingbooster.core.base_trainer - INFO - Number of categorical features identified: 4
+2025-09-08 17:33:05,071 - batchtrainingbooster.core.base_trainer - INFO - Initializing training state for CatBoost
+2025-09-08 17:33:05,071 - batchtrainingbooster.core.base_trainer - INFO - 🚀 Starting CatBoost training with 2 batches
+2025-09-08 17:33:05,072 - batchtrainingbooster.core.base_trainer - INFO - Starting to process DataFrame in batches...
+2025-09-08 17:33:05,072 - batchtrainingbooster.core.base_trainer - INFO - Creating batches...
+2025-09-08 17:33:05,367 - batchtrainingbooster.core.base_trainer - INFO - Created 2 batches stratified by Survived
+2025-09-08 17:33:05,368 - batchtrainingbooster.core.base_trainer - INFO - Batches created successfully.
+2025-09-08 17:33:05,369 - batchtrainingbooster.core.base_trainer - INFO - Batches created and applied to DataFrame.
+2025-09-08 17:33:05,369 - batchtrainingbooster.core.base_trainer - INFO - Filtering and processing batch 0
+2025-09-08 17:33:05,427 - batchtrainingbooster.core.base_trainer - INFO - Converting Spark DataFrame to pandas DataFrame for batch 0
+2025-09-08 17:33:09,053 - batchtrainingbooster.core.base_trainer - INFO - 📦 Processing batch 1/2
+2025-09-08 17:33:09,054 - batchtrainingbooster.core.base_trainer - INFO - 🏋️ Training CatBoost model on batch 1/2
+2025-09-08 17:33:09,234 - batchtrainingbooster.core.base_trainer - INFO - ✅ Model trained on batch 1/2
+2025-09-08 17:33:09,236 - batchtrainingbooster.core.base_trainer - INFO - Batch 1 - Train: 0.51809 | Valid: 0.55433
+2025-09-08 17:33:09,237 - batchtrainingbooster.core.base_trainer - INFO - 🎉 New best model found with Valid Loss: 0.55433 (improvement: inf)
+2025-09-08 17:33:09,237 - batchtrainingbooster.core.base_trainer - INFO - Filtering and processing batch 1
+2025-09-08 17:33:09,274 - batchtrainingbooster.core.base_trainer - INFO - Converting Spark DataFrame to pandas DataFrame for batch 1
+2025-09-08 17:33:10,848 - batchtrainingbooster.core.base_trainer - INFO - 📦 Processing batch 2/2
+2025-09-08 17:33:10,848 - batchtrainingbooster.core.base_trainer - INFO - 🏋️ Training CatBoost model on batch 2/2
+2025-09-08 17:33:10,929 - batchtrainingbooster.core.base_trainer - INFO - ✅ Model trained on batch 2/2
+2025-09-08 17:33:10,930 - batchtrainingbooster.core.base_trainer - INFO - Batch 2 - Train: 0.46579 | Valid: 0.53052
+2025-09-08 17:33:10,931 - batchtrainingbooster.core.base_trainer - INFO - 🎉 New best model found with Valid Loss: 0.53052 (improvement: 0.02381)
+2025-09-08 17:33:10,932 - batchtrainingbooster.core.base_trainer - INFO - Plotting learning curve of CatBoost model...
+2025-09-08 17:33:11,124 - batchtrainingbooster.core.base_trainer - INFO - Learning curve plotted successfully.
+2025-09-08 17:33:11,169 - batchtrainingbooster.core.base_trainer - INFO - CatBoost training completed successfully!
+2025-09-08 17:33:11,171 - batchtrainingbooster.core.base_trainer - INFO - Total batches processed: 2
+2025-09-08 17:33:11,172 - batchtrainingbooster.core.base_trainer - INFO - Best validation loss: 0.53052
+2025-09-08 17:33:11,172 - batchtrainingbooster.core.base_trainer - INFO - Using best model
+2025-09-08 17:33:11,173 - batchtrainingbooster.core.base_trainer - INFO - Categorical features used: 4
+2025-09-08 17:33:46,867 - batchtrainingbooster.core.base_trainer - INFO - Validating input parameters
+2025-09-08 17:33:46,932 - batchtrainingbooster.core.base_trainer - INFO - Preparing training data
+2025-09-08 17:33:46,932 - batchtrainingbooster.core.base_trainer - INFO - Preparing validation data
+2025-09-08 17:33:46,933 - batchtrainingbooster.core.base_trainer - INFO - Converting Spark DataFrame to pandas DataFrame for validation.
+2025-09-08 17:33:48,305 - batchtrainingbooster.core.base_trainer - INFO - Categorical features detected in validation set
+2025-09-08 17:33:48,306 - batchtrainingbooster.core.base_trainer - INFO - Number of categorical features identified: 4
+2025-09-08 17:33:48,307 - batchtrainingbooster.core.base_trainer - INFO - Initializing training state for CatBoost
+2025-09-08 17:33:48,307 - batchtrainingbooster.core.base_trainer - INFO - 🚀 Starting CatBoost training with 2 batches
+2025-09-08 17:33:48,308 - batchtrainingbooster.core.base_trainer - INFO - Starting to process DataFrame in batches...
+2025-09-08 17:33:48,308 - batchtrainingbooster.core.base_trainer - INFO - Creating batches...
+2025-09-08 17:33:48,437 - batchtrainingbooster.core.base_trainer - INFO - Created 2 batches stratified by Survived
+2025-09-08 17:33:48,438 - batchtrainingbooster.core.base_trainer - INFO - Batches created successfully.
+2025-09-08 17:33:48,438 - batchtrainingbooster.core.base_trainer - INFO - Batches created and applied to DataFrame.
+2025-09-08 17:33:48,439 - batchtrainingbooster.core.base_trainer - INFO - Filtering and processing batch 0
+2025-09-08 17:33:48,463 - batchtrainingbooster.core.base_trainer - INFO - Converting Spark DataFrame to pandas DataFrame for batch 0
+2025-09-08 17:33:49,642 - batchtrainingbooster.core.base_trainer - INFO - 📦 Processing batch 1/2
+2025-09-08 17:33:49,642 - batchtrainingbooster.core.base_trainer - INFO - 🏋️ Training CatBoost model on batch 1/2
+2025-09-08 17:33:49,717 - batchtrainingbooster.core.base_trainer - INFO - ✅ Model trained on batch 1/2
+2025-09-08 17:33:49,719 - batchtrainingbooster.core.base_trainer - INFO - Batch 1 - Train: 0.51809 | Valid: 0.55433
+2025-09-08 17:33:49,719 - batchtrainingbooster.core.base_trainer - INFO - 🎉 New best model found with Valid Loss: 0.55433 (improvement: inf)
+2025-09-08 17:33:49,720 - batchtrainingbooster.core.base_trainer - INFO - Filtering and processing batch 1
+2025-09-08 17:33:49,741 - batchtrainingbooster.core.base_trainer - INFO - Converting Spark DataFrame to pandas DataFrame for batch 1
+2025-09-08 17:33:50,626 - batchtrainingbooster.core.base_trainer - INFO - 📦 Processing batch 2/2
+2025-09-08 17:33:50,627 - batchtrainingbooster.core.base_trainer - INFO - 🏋️ Training CatBoost model on batch 2/2
+2025-09-08 17:33:50,698 - batchtrainingbooster.core.base_trainer - INFO - ✅ Model trained on batch 2/2
+2025-09-08 17:33:50,699 - batchtrainingbooster.core.base_trainer - INFO - Batch 2 - Train: 0.46579 | Valid: 0.53052
+2025-09-08 17:33:50,700 - batchtrainingbooster.core.base_trainer - INFO - 🎉 New best model found with Valid Loss: 0.53052 (improvement: 0.02381)
+2025-09-08 17:33:50,701 - batchtrainingbooster.core.base_trainer - INFO - Plotting learning curve of CatBoost model...
+2025-09-08 17:33:50,928 - batchtrainingbooster.core.base_trainer - INFO - Learning curve plotted successfully.
+2025-09-08 17:33:50,929 - batchtrainingbooster.core.base_trainer - INFO - CatBoost training completed successfully!
+2025-09-08 17:33:50,929 - batchtrainingbooster.core.base_trainer - INFO - Total batches processed: 2
+2025-09-08 17:33:50,930 - batchtrainingbooster.core.base_trainer - INFO - Best validation loss: 0.53052
+2025-09-08 17:33:50,930 - batchtrainingbooster.core.base_trainer - INFO - Using best model
+2025-09-08 17:33:50,931 - batchtrainingbooster.core.base_trainer - INFO - Categorical features used: 4
+2025-09-08 17:33:53,719 - batchtrainingbooster.core.base_trainer - INFO - Converting Spark DataFrame to pandas DataFrame for validation.
+2025-09-08 17:33:54,339 - batchtrainingbooster.core.base_trainer - INFO - Categorical features detected - Enabling categorical support
+2025-09-08 17:33:54,340 - batchtrainingbooster.core.base_trainer - INFO - 🚀 Starting XGBoost training with 3 batches
+2025-09-08 17:33:54,341 - batchtrainingbooster.core.base_trainer - INFO - Starting to process DataFrame in batches...
+2025-09-08 17:33:54,341 - batchtrainingbooster.core.base_trainer - INFO - Creating batches...
+2025-09-08 17:33:54,620 - batchtrainingbooster.core.base_trainer - INFO - Created 3 batches stratified by Survived
+2025-09-08 17:33:54,621 - batchtrainingbooster.core.base_trainer - INFO - Batches created successfully.
+2025-09-08 17:33:54,622 - batchtrainingbooster.core.base_trainer - INFO - Batches created and applied to DataFrame.
+2025-09-08 17:33:54,623 - batchtrainingbooster.core.base_trainer - INFO - Filtering and processing batch 0
+2025-09-08 17:33:54,662 - batchtrainingbooster.core.base_trainer - INFO - Converting Spark DataFrame to pandas DataFrame for batch 0
+2025-09-08 17:33:55,765 - batchtrainingbooster.core.base_trainer - INFO - Processing batch 1/3
+2025-09-08 17:33:55,767 - batchtrainingbooster.core.base_trainer - INFO - Calculating sample weights for batch 1
+2025-09-08 17:33:55,773 - batchtrainingbooster.core.base_trainer - INFO - Learning rate for batch 1: 0.100000
+2025-09-08 17:33:55,774 - batchtrainingbooster.core.base_trainer - INFO - XGBoost model initialized with parameters:
+2025-09-08 17:33:55,775 - batchtrainingbooster.core.base_trainer - INFO -   learning_rate: 0.1
+2025-09-08 17:33:55,776 - batchtrainingbooster.core.base_trainer - INFO -   max_depth: 6
+2025-09-08 17:33:55,776 - batchtrainingbooster.core.base_trainer - INFO -   n_estimators: 300
+2025-09-08 17:33:55,777 - batchtrainingbooster.core.base_trainer - INFO -   subsample: 0.8
+2025-09-08 17:33:55,777 - batchtrainingbooster.core.base_trainer - INFO - 🏋️ Training XGBoost on batch 1
+2025-09-08 17:33:56,012 - batchtrainingbooster.core.base_trainer - INFO - Batch 1 - Train: 0.20897 | Valid: 0.51020
+2025-09-08 17:33:56,015 - batchtrainingbooster.core.base_trainer - INFO - New best validation loss: 0.51020 (improvement: inf)
+2025-09-08 17:33:56,019 - batchtrainingbooster.core.base_trainer - INFO - Filtering and processing batch 1
+2025-09-08 17:33:56,057 - batchtrainingbooster.core.base_trainer - INFO - Converting Spark DataFrame to pandas DataFrame for batch 1
+2025-09-08 17:33:56,954 - batchtrainingbooster.core.base_trainer - INFO - Processing batch 2/3
+2025-09-08 17:33:56,955 - batchtrainingbooster.core.base_trainer - INFO - Calculating sample weights for batch 2
+2025-09-08 17:33:56,962 - batchtrainingbooster.core.base_trainer - INFO - Learning rate for batch 2: 0.020000
+2025-09-08 17:33:56,964 - batchtrainingbooster.core.base_trainer - INFO - 🏋️ Training XGBoost on batch 2
+2025-09-08 17:33:57,156 - batchtrainingbooster.core.base_trainer - INFO - Batch 2 - Train: 0.43466 | Valid: 0.50125
+2025-09-08 17:33:57,163 - batchtrainingbooster.core.base_trainer - INFO - New best validation loss: 0.50125 (improvement: 0.00896)
+2025-09-08 17:33:57,170 - batchtrainingbooster.core.base_trainer - INFO - Filtering and processing batch 2
+2025-09-08 17:33:57,209 - batchtrainingbooster.core.base_trainer - INFO - Converting Spark DataFrame to pandas DataFrame for batch 2
+2025-09-08 17:33:58,111 - batchtrainingbooster.core.base_trainer - INFO - Processing batch 3/3
+2025-09-08 17:33:58,112 - batchtrainingbooster.core.base_trainer - INFO - Calculating sample weights for batch 3
+2025-09-08 17:33:58,118 - batchtrainingbooster.core.base_trainer - INFO - Learning rate for batch 3: 0.004000
+2025-09-08 17:33:58,119 - batchtrainingbooster.core.base_trainer - INFO - 🏋️ Training XGBoost on batch 3
+2025-09-08 17:33:58,170 - batchtrainingbooster.core.base_trainer - INFO - Batch 3 - Train: 0.45787 | Valid: 0.50666
+2025-09-08 17:33:58,174 - batchtrainingbooster.core.base_trainer - INFO - ⏳ No improvement - Patience: 1/5
+2025-09-08 17:33:58,280 - batchtrainingbooster.core.base_trainer - INFO - Plotting learning curve of XGBoost model...
+2025-09-08 17:33:58,397 - batchtrainingbooster.core.base_trainer - INFO - Learning curve plotted successfully.
+2025-09-08 17:33:58,398 - batchtrainingbooster.core.base_trainer - INFO - Training completed successfully!
+2025-09-08 17:33:58,398 - batchtrainingbooster.core.base_trainer - INFO - Total batches processed: 3
+2025-09-08 17:33:58,399 - batchtrainingbooster.core.base_trainer - INFO - Best validation loss: 0.50125
+2025-09-08 17:33:58,399 - batchtrainingbooster.core.base_trainer - INFO - Using best model
