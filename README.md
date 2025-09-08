@@ -22,8 +22,8 @@ src/batchtrainingbooster/
 ├── trainers/
 │   ├── xgboost_trainer.py       # Implémentation XGBoost avec warm restart
 │   └── catboost_trainer.py      # Implémentation CatBoost avec modèle incrémental
-├── spark_transform/
-│   └── spark_transform.py       # Transformations Spark (ex: calcul BMI)
+├── xyz/
+│   └── .py       #
 └── logger/
     └── logger.py                # Système de logging centralisé
 
@@ -54,16 +54,15 @@ model = trainer.fit(
     train_dataframe=spark_train_df,
     valid_dataframe=spark_valid_df,
     target_column="NObeyesdad",
-    num_batches=10,
     config_model={
         "n_estimators": 100,
         "max_depth": 6,
         "eval_metric": "mlogloss"
     },
-config_training = {
-    "num_batches": 2,  # nombre de lots pour l'entraînement
-    "max_patience": 5,  # patience pour early stopping global
-    "show_learning_curve": True,
+    config_training = {
+        "num_batches": 2,  # nombre de lots pour l'entraînement
+        "max_patience": 5,  # patience pour early stopping global
+        "show_learning_curve": True,
     },
     config_lr_scheduler={
         "initial_lr": 0.1,
