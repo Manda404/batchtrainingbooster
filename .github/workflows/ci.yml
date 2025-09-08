@@ -1,10 +1,10 @@
 name: CI - BatchTrainingBooster
 
 on:
-  push:                       # 🚀 Lancement sur push
-    branches: [ "main", "feature/**" ]
-  pull_request:               # 🔁 Lancement sur PR
-    branches: [ "main" ]
+  push:                       # 🚀 Lancement sur push (corrige auto + commit)
+    branches: ["main", "feature/**"]
+  pull_request:               # 🔁 Lancement sur PR (bloquant, sans auto-fix)
+    branches: ["main"]
 
 # ⚡ Empêche plusieurs workflows concurrents sur la même branche
 concurrency:
@@ -16,114 +16,121 @@ jobs:
     runs-on: ubuntu-latest    # 🐧 Runner GitHub (Linux)
 
     strategy:
-      fail-fast: false        # ❌ Ne coupe pas tous les jobs si un échoue
+      fail-fast: false
       matrix:
-        python-version: [ "3.11" ]   # 🐍 Version Python testée (ajoute "3.12" plus tard si besoin)
+        python-version: ["3.11"]
         include:
           - python-version: "3.11"
-            java-version: "17"       # ☕ Version Java compatible PySpark 4.x
+            java-version: "17"   # ☕ Java requis pour PySpark
 
     env:
-      PIP_DISABLE_PIP_VERSION_CHECK: "1"        # 🔇 Pas de check pip inutile
-      POETRY_VIRTUALENVS_IN_PROJECT: "true"     # 📦 venv local (.venv)
-      PYTHONPATH: ${{ github.workspace }}/src   # 🛠️ Permet d'importer ton code src/
-      SPARK_LOCAL_IP: 127.0.0.1                 # 🌐 Évite les soucis réseau Spark
-      PYTHONWARNINGS: "ignore::DeprecationWarning"  # 🙈 Cache les DeprecationWarning Python
-      JUPYTER_PLATFORM_DIRS: "1"                # ✅ Supprime l’avertissement jupyter_client
-      # SPARK_CONF_DIR: ${{ github.workspace }}/tests/resources  # 📁 (Optionnel) si tu ajoutes log4j2.properties
-      # SPARK_SUBMIT_OPTS: "-Dlog4j2.formatMsgNoLookups=true -Dorg.apache.logging.log4j.simplelog.StatusLogger.level=OFF"
-      # (décommente si tu veux réduire le bruit des logs Spark)
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"        
+      POETRY_VIRTUALENVS_IN_PROJECT: "true"    
+      PYTHONPATH: ${{ github.workspace }}/src  
+      SPARK_LOCAL_IP: 127.0.0.1                 
+      PYTHONWARNINGS: "ignore::DeprecationWarning"  
+      JUPYTER_PLATFORM_DIRS: "1"                
 
     steps:
-      # 1) 📂 Récupération du code source
-      - name: Checkout repository
+      # 1) 📂 Récupération du code
+      - name: 📂 Checkout repository
         uses: actions/checkout@v4
 
       # 2) 🐍 Installation de Python
-      - name: Set up Python
+      - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "pip"   # 📦 Cache pip global
+          cache: "pip"
 
-      # 3) ☕ Installation de Java (Temurin 17)
-      - name: Set up Java (Temurin ${{ matrix.java-version }})
+      # 3) ☕ Installation de Java (Spark)
+      - name: ☕ Set up Java (Temurin ${{ matrix.java-version }})
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: ${{ matrix.java-version }}
 
       # 4) 📦 Installation de Poetry
-      - name: Install Poetry
+      - name: 📦 Install Poetry
         uses: abatilo/actions-poetry@v3
         with:
           poetry-version: "1.8.3"
 
       # 5) ⚙️ Configuration de Poetry
-      - name: Configure Poetry
+      - name: ⚙️ Configure Poetry
         run: |
           poetry config virtualenvs.create true
           poetry config virtualenvs.in-project true
           poetry --version
 
-      # 6) 🧠 Mise en cache du venv + dépendances Poetry
-      - name: Cache Poetry and venv
+      # 6) 💾 Cache du venv et de Poetry
+      - name: 💾 Cache Poetry and venv
         uses: actions/cache@v4
         with:
           path: |
             .venv
             ~/.cache/pypoetry
-          key: ${{ runner.os }}-py${{ matrix.python-version }}-poetry1.8.3-${{ hashFiles('**/poetry.lock') }}-v4
+          key: ${{ runner.os }}-py${{ matrix.python-version }}-poetry1.8.3-${{ hashFiles('**/poetry.lock') }}-v5
           restore-keys: |
             ${{ runner.os }}-py${{ matrix.python-version }}-poetry1.8.3-
 
-      # 7) 📥 Installation des dépendances (y compris dev : ruff, black, mypy, pytest...)
-      - name: Install dependencies (main + dev)
+      # 7) 📥 Installation des dépendances (main + dev)
+      - name: 📥 Install dependencies (main + dev)
         run: poetry install --no-interaction --no-ansi --no-root --with dev
 
-      # 8) 🎨 Vérification de la qualité du code
-      # 👉 Choisis UNE stratégie : Ruff fait tout (format + lint) OU Black + Ruff.
+      # 8) 🎨 Vérification du code (PR = check, Push = fix auto)
+      ## Sur les Pull Requests → bloquant
+      - name: 🎨 Ruff format (check)
+        if: github.event_name == 'pull_request'
+        run: poetry run ruff format --check src
 
-      ## Option A : Ruff fait formatage + lint
-      - name: Code quality (Ruff format + lint)
-        run: |
-          echo "🎨 Vérification du formatage avec Ruff..."
-          poetry run ruff format --check src
-          
-          echo "🔍 Vérification du linting avec Ruff..."
-          poetry run ruff check src
+      - name: 🔍 Ruff lint (check)
+        if: github.event_name == 'pull_request'
+        run: poetry run ruff check src --output-format=github
 
-      ## Option B (si tu préfères Black + Ruff, décommente et commente Option A ci-dessus)
-      # - name: Code quality (Black + Ruff)
-      #   run: |
-      #     echo "🎨 Vérification du formatage avec Black..."
-      #     poetry run black --check src tests
-      #
-      #     echo "🔍 Vérification du linting avec Ruff..."
-      #     poetry run ruff check src tests --output-format=github
+      ## Sur les Push → correction + commit auto
+      - name: ✨ Ruff format (fix)
+        if: github.event_name == 'push'
+        run: poetry run ruff format src
 
-      # 9) 🏷️ Vérification des types avec mypy
-      - name: Type checking (mypy)
+      - name: 🧹 Ruff lint (fix)
+        if: github.event_name == 'push'
+        run: poetry run ruff check src --fix
+
+      - name: 📦 Commit auto des corrections Ruff
+        if: github.event_name == 'push'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style(ci): auto-format & lint fix with Ruff"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
+          skip_fetch: true
+
+      # 9) 🏷️ Vérification des types
+      - name: 🏷️ Type checking (mypy)
         run: |
           echo "🏷️ Vérification des types avec mypy..."
-          poetry run mypy --python-version ${{ matrix.python-version }} --explicit-package-bases --check-untyped-defs src
+          poetry run mypy --install-types --non-interactive \
+            --python-version ${{ matrix.python-version }} \
+            --explicit-package-bases \
+            --check-untyped-defs \
+            src
 
       # 10) 🧪 Lancement des tests unitaires
-      - name: Run unit tests (unittest)
+      - name: 🧪 Run unit tests (unittest)
         env:
-          PYSPARK_PYTHON: python   # Simplifie l’appel de PySpark
-          # SPARK_CONF_DIR: ${{ github.workspace }}/tests/resources  # 📁 (Optionnel) si tu ajoutes log4j2.properties
+          PYSPARK_PYTHON: python
         run: |
           echo "🧪 Exécution des tests unitaires..."
           poetry run python -m unittest discover -s tests -p "test_*.py" -v
 
-      # 11) 📊 (Bonus futur) Rapports de tests / couverture
-      # - name: Run tests (pytest + coverage)
+      # 11) 📊 (Optionnel futur) Rapports de couverture
+      # - name: 📊 Run tests (pytest + coverage)
       #   run: |
       #     poetry run pytest -q --maxfail=1 --disable-warnings \
       #       --junitxml=reports/junit.xml --cov=src --cov-report=xml:reports/coverage.xml
       #
-      # - name: Upload test reports
+      # - name: 📤 Upload test reports
       #   if: always()
       #   uses: actions/upload-artifact@v4
       #   with:

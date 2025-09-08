@@ -25,5 +25,6 @@ incrementaltraining/data/*
 #incrementaltraining/logs/*
 #incrementaltraining/notebooks/*
 incrementaltraining/utils/*
+artifacts/
 
 

@@ -1,6 +1,6 @@
 from data._data_mocks import create_sparkdf
 from spark_config._spark_testcase import SparkTestCase
-from batchtrainingbooster.spark_transform.spark_transform import add_bmi
+from spark_transform.spark_transform import add_bmi
 
 
 class TestAddBMI(SparkTestCase):
