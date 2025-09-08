@@ -9,6 +9,8 @@ authors = ["Manda Surel <s239150.eps@gmail.com>"]
 readme = "README.md"
 packages = [{ include = "batchtrainingbooster", from = "src" }]
 
+# Inclure le marqueur dans les artefacts
+include = ["src/batchtrainingbooster/py.typed"]
 # ============================================================
 # DÉPENDANCES PRINCIPALES
 # ============================================================
@@ -36,6 +38,19 @@ mypy = "^1.17.1"
 # CONFIGURATION DU BUILD SYSTEM
 # ============================================================
 ruff = "^0.12.12"
+pandas-stubs = "^2.3.2.250827"
+types-requests = "^2.32.4.20250809"
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.mypy]
+disable_error_code = ["import-untyped"]
+check_untyped_defs = true
+
+[tool.ruff]
+exclude = ["*.ipynb"]
+
+[tool.ruff.lint]
+ignore = ["E402"]

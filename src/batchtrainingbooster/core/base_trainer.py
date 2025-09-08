@@ -1,8 +1,8 @@
-from typing import List
 from numpy import cumsum
 from pyspark.sql import Window
 from abc import ABC, abstractmethod
-from logger.logger import setup_logger
+from typing import List, Generator, Optional, Tuple
+from batchtrainingbooster.logger.logger import setup_logger
 from pandas import DataFrame as PandasDataFrame
 from pyspark.sql import DataFrame as SparkDataFrame
 from pyspark.sql.functions import col, ntile, rand
@@ -26,10 +26,11 @@ class BatchTrainer(ABC):
     @abstractmethod
     def fit(
         self,
-        dataframe: SparkDataFrame,
+        train_dataframe: Optional[SparkDataFrame],
+        valid_dataframe: Optional[SparkDataFrame],
         target_column: str,
         **kwargs,
-    ):
+    ) -> None:
         pass
 
     @abstractmethod
@@ -41,7 +42,9 @@ class BatchTrainer(ABC):
     ):
         pass
 
-    def _create_and_apply_batches(self, dataframe, target_column: str, **kwargs):
+    def _create_and_apply_batches(
+        self, dataframe: SparkDataFrame, target_column: str, **kwargs
+    ) -> SparkDataFrame:
         """
         Create balanced batches per target class using ntile over a random order.
 
@@ -75,14 +78,13 @@ class BatchTrainer(ABC):
         dataframe: SparkDataFrame,
         batch_column: str,
         num_batches: int,
-    ) -> PandasDataFrame:
+    ) -> Generator[PandasDataFrame, None, None]:  # CORRECTION: Type de retour corrigé
         """
         Apply pandas processing to a Spark DataFrame in a streaming fashion.
 
         Args:
             dataframe (SparkDataFrame): The input Spark DataFrame.
             batch_column (str): The column used for batching.
-            pipeline (Union[Pipeline, None]): The sklearn pipeline to apply.
             num_batches (int): The number of batches to create.
 
         Yields:
@@ -104,24 +106,28 @@ class BatchTrainer(ABC):
             self.logger.info(
                 f"Converting Spark DataFrame to pandas DataFrame for batch {batch_id}"
             )
-            pandas_df = batch_dataframe.toPandas().drop(columns=["batch_id"])
+            # CORRECTION: Utilisation correcte de drop avec *args
+            pandas_df = batch_dataframe.toPandas().drop("batch_id", axis=1)
 
             yield pandas_df
 
-    def _apply_pandas_processing_to_validation_set(
-        self,
-        dataframe: SparkDataFrame,
-    ) -> PandasDataFrame:
+    def _apply_pandas_processing(self, dataframe: SparkDataFrame) -> PandasDataFrame:
         """
-        Convert a Spark DataFrame to a pandas DataFrame and optionally apply a
-        pandas-compatible pipeline (`.transform(pd.DataFrame) -> pd.DataFrame`).
+        Convert a Spark DataFrame into a pandas DataFrame for validation.
+
+        Args:
+            dataframe (SparkDataFrame): Input Spark DataFrame.
+
+        Returns:
+            PandasDataFrame: Equivalent pandas DataFrame.
         """
-        # Spark -> pandas conversion
+        # Convert Spark -> pandas
         self.logger.info(
             "Converting Spark DataFrame to pandas DataFrame for validation."
         )
         pandas_df: PandasDataFrame = dataframe.toPandas()
 
+        # Log shape for debugging
         self.logger.debug(
             "Pandas DataFrame created with %d rows and %d columns",
             pandas_df.shape[0],
@@ -187,3 +193,40 @@ class BatchTrainer(ABC):
         grid()
         show()
         self.logger.info("Learning curve plotted successfully.")
+
+    def _convert_object_to_category_dtype(
+        self, data: PandasDataFrame, target_column: str = ""
+    ) -> Tuple[PandasDataFrame, bool]:
+        """
+        Convert object and category columns in the provided PandasDataFrame to the 'category' dtype.
+
+        This function identifies columns with object or category types in the PandasDataFrame
+        and converts them to the 'category' dtype for improved memory usage and performance.
+
+        Parameters
+        ----------
+        data : PandasDataFrame
+            The dataset containing features.
+
+        target_column : str
+            The name of the target column that should not be converted.
+
+        Returns
+        -------
+        PandasDataFrame
+            The modified DataFrame with categorical columns converted.
+        """
+        # Identify categorical features
+        cat_features = [
+            col
+            for col in data.select_dtypes(include=["object"]).columns.tolist()
+            if col != target_column
+        ]
+
+        # Check if there are categorical features that are not already of type 'category'
+        if cat_features:
+            # Convert identified features to 'category' dtype
+            data[cat_features] = data[cat_features].astype("category")
+            is_present = True
+
+        return data, is_present

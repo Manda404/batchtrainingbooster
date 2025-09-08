@@ -1,14 +1,16 @@
 from gc import collect
 from unittest import TestCase
-from warnings import filterwarnings, ResourceWarning
 from pyspark.sql import SparkSession
+
+import warnings
+from builtins import ResourceWarning
 
 
 class SparkTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         # Option : ignorer les ResourceWarning (sockets Py4J lors de l’extinction)
-        filterwarnings("ignore", category=ResourceWarning)
+        warnings.filterwarnings("ignore", category=ResourceWarning)
 
         cls.spark = (
             SparkSession.builder.master("local[*]")
