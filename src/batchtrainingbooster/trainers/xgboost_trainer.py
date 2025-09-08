@@ -197,7 +197,7 @@ class XGBoostTrainer(BatchTrainer):
                 "eval_metric", "logloss"
             ),  # Standardisé en minuscule
             "previous_model": None,
-            #"show_learning_curve": config_training.get("show_learning_curve", True),
+            # "show_learning_curve": config_training.get("show_learning_curve", True),
         }
 
     def _prepare_batch_data(
@@ -315,7 +315,7 @@ class XGBoostTrainer(BatchTrainer):
             ],
             xgb_model=xgb_model_param,
             sample_weight=batch_data["sample_weight"],
-            #verbose=True,  # Évite le spam de logs XGBoost
+            # verbose=True,  # Évite le spam de logs XGBoost
         )
 
     def _evaluate_and_update_best_model(
@@ -380,7 +380,7 @@ class XGBoostTrainer(BatchTrainer):
 
         self.model = final_model
 
-        if kwargs.get('config_training',{}).get("show_learning_curve"):
+        if kwargs.get("config_training", {}).get("show_learning_curve"):
             # Génération des visualisations
             if lr_scheduler_config is not None and self.lr_schedulers:
                 self._plot_lr_schedule("Exponential Decay", self.lr_schedulers)
