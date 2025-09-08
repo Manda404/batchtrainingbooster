@@ -114,7 +114,7 @@ class CatBoostTrainer(BatchTrainer):
             "y": y_train,
             "init_model": training_state.get("previous_model"),
             "eval_set": [(X_train, y_train), (X_valid, y_valid)],
-            "verbose": False,  # Évite le spam des logs CatBoost
+            "verbose": True,  # Évite le spam des logs CatBoost
             "use_best_model": False,  # Géré manuellement avec early stopping global
         }
 
