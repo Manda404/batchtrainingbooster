@@ -16,17 +16,23 @@ BatchTrainingBooster est un framework conçu pour résoudre les défis de l'entr
 ## 🏗️ Architecture
 
 Le framework s'articule autour de plusieurs composants clés :
-src/batchtrainingbooster/
-├── core/
-│   └── base_trainer.py          # Classe abstraite pour tous les trainers
-├── trainers/
+```
+batchtrainingbooster/
+│
+├── __init__.py                   # Fichier d'initialisation du module
+│
+├── core/                         #
+│   ├── __init__.py               # Fichier d'initialisation du module
+│   ├── base_trainer.py           # Classe abstraite pour tous les trainers
+│
+├── trainers/                    # 
+│   ├── __init__.py              # Fichier d'initialisation du module des models
 │   ├── xgboost_trainer.py       # Implémentation XGBoost avec warm restart
 │   └── catboost_trainer.py      # Implémentation CatBoost avec modèle incrémental
-├── xyz/
-│   └── .py       #
+│
 └── logger/
     └── logger.py                # Système de logging centralisé
-
+```
 
 ## ⚡ Fonctionnalités Implémentées
 
@@ -55,7 +61,9 @@ model = trainer.fit(
     valid_dataframe=spark_valid_df,
     target_column="NObeyesdad",
     config_model={
+        "objective": "multi:softprob",
         "n_estimators": 100,
+        "num_class": spark_valid_df.select("NObeyesdad").distinct().count(),
         "max_depth": 6,
         "eval_metric": "mlogloss"
     },
