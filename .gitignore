@@ -12,7 +12,7 @@ __pycache__/
 .ipynb_checkpoints/
 
 # Données locales
-incrementaltraining/data/*
+batchtrainingbooster/notebooks/artifacts/*
 
 
 # Caches de tests et d’outils
@@ -20,11 +20,11 @@ incrementaltraining/data/*
 .pytest_cache/
 .cache/
 .ruff_cache/
+.DS_Store
 
 # Logs & artefacts internes
-#incrementaltraining/logs/*
-#incrementaltraining/notebooks/*
-incrementaltraining/utils/*
-artifacts/
-
+artifacts/*
+catboost_info/*
+batchtrainingbooster/utils/*
+batchtrainingbooster/src/batchtrainingbooster/logger/logs/*
 

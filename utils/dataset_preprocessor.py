@@ -3,7 +3,6 @@ from typing import Tuple, Optional
 from sklearn.model_selection import train_test_split
 from pyspark.sql import SparkSession, DataFrame as SparkDataFrame
 
-
 # 1) Train/Validation Split with stratification
 def make_train_valid_split(
     df: PandasDataFrame,
@@ -104,3 +103,20 @@ def to_spark_dfs(
     )
 
     return spark_train_df, spark_valid_df
+
+
+def stop_spark_session(spark: Optional[SparkSession]) -> None:
+    """
+    Stoppe proprement une session Spark si elle existe.
+
+    Parameters
+    ----------
+    spark : Optional[SparkSession]
+        La session Spark à arrêter.
+    """
+    if spark is not None:
+        print("[SPARK] Stopping Spark session...")
+        spark.stop()
+        print("[SPARK] Session stopped successfully.")
+    else:
+        print("[SPARK] No active Spark session to stop.")

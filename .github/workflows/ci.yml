@@ -117,12 +117,20 @@ jobs:
             src
 
       # 10) 🧪 Lancement des tests unitaires
-      - name: 🧪 Run unit tests (unittest)
+      - name: 🧪 Run trainer instantiation tests
         env:
           PYSPARK_PYTHON: python
         run: |
-          echo "🧪 Exécution des tests unitaires..."
-          poetry run python -m unittest discover -s tests -p "test_*.py" -v
+          echo "🧪 Exécution des tests unitaires pour l'instanciation du model..."
+          poetry run python -m unittest discover -s tests -p "test_trainer_init_*.py" -v
+
+      - name: 🧪 Run trainer fit tests
+        env:
+          PYSPARK_PYTHON: python
+        run: |
+          echo "🧪 Exécution des tests unitaires pour fit le model..."
+          poetry run python -m unittest discover -s tests -p "test_fit_*.py" -v
+
 
       # 11) 📊 (Optionnel futur) Rapports de couverture
       # - name: 📊 Run tests (pytest + coverage)
