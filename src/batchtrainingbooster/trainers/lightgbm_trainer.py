@@ -12,8 +12,8 @@ class LGBMTrainer(BatchTrainer):  # lightgbm.LGBMClassifier
         super().__init__()
         self.global_train_loss: List[List[float]] = []  # keep track of training loss
         self.global_valid_loss: List[List[float]] = []  # keep track of validation loss
-        self.global_iterations: List[int] = []  # keep track of iterations
-        self.model: Optional[LGBMClassifier] = None  # Initialize model attribute
+        self.global_iterations: List[int] = []          # keep track of iterations
+        self.model: Optional[LGBMClassifier] = None     # Initialize model attribute
         self.lr_schedulers: List[float] = []
         self.categorical_features: Optional[List[str]] = None  #
         self.weight_calculator = OptimizedWeightCalculator()
