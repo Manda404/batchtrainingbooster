@@ -8,6 +8,7 @@ from pyspark.sql import types as T
 from pyspark.sql import functions as F
 from pyspark.sql import Window as W
 
+
 @dataclass
 class ObesityRow:
     Age: float
@@ -48,16 +49,19 @@ def generate_mock_row() -> ObesityRow:
         CAEC=choice(["no", "Sometimes", "Frequently", "Always"]),
         CALC=round(uniform(0, 3), 1),
         MTRANS=choice(["Walking", "Bike", "Automobile", "Public_Transportation"]),
-        NObeyesdad=choice([
-            "Underweight",
-            "Normal_Weight",
-            "Overweight_Level_I",
-            "Overweight_Level_II",
-            "Obesity_Type_I",
-            "Obesity_Type_II",
-            "Obesity_Type_III",
-        ]),
+        NObeyesdad=choice(
+            [
+                "Underweight",
+                "Normal_Weight",
+                "Overweight_Level_I",
+                "Overweight_Level_II",
+                "Obesity_Type_I",
+                "Obesity_Type_II",
+                "Obesity_Type_III",
+            ]
+        ),
     )
+
 
 def build_mock_dataset(n: int, seed: Optional[int] = None) -> List[ObesityRow]:
     """Construit une liste de n ObesityRow (optionnellement reproductible via seed)."""
@@ -65,28 +69,34 @@ def build_mock_dataset(n: int, seed: Optional[int] = None) -> List[ObesityRow]:
         random.seed(seed)
     return [generate_mock_row() for _ in range(n)]
 
-# --- PySpark ---
-SCHEMA = T.StructType([
-    T.StructField("Age", T.DoubleType(), False),
-    T.StructField("Gender", T.StringType(), False),
-    T.StructField("Height", T.DoubleType(), False),
-    T.StructField("Weight", T.DoubleType(), False),
-    T.StructField("FAVC", T.StringType(), False),
-    T.StructField("FCVC", T.DoubleType(), False),
-    T.StructField("NCP", T.DoubleType(), False),
-    T.StructField("SCC", T.StringType(), False),
-    T.StructField("SMOKE", T.StringType(), False),
-    T.StructField("CH2O", T.DoubleType(), False),
-    T.StructField("family_history_with_overweight", T.StringType(), False),
-    T.StructField("FAF", T.DoubleType(), False),
-    T.StructField("TUE", T.DoubleType(), False),
-    T.StructField("CAEC", T.StringType(), False),
-    T.StructField("CALC", T.DoubleType(), False),
-    T.StructField("MTRANS", T.StringType(), False),
-    T.StructField("NObeyesdad", T.StringType(), False),
-])
 
-def build_mock_spark_df(spark: SparkSession, n: int, seed: Optional[int] = None) -> SparkDataFrame:
+# --- PySpark ---
+SCHEMA = T.StructType(
+    [
+        T.StructField("Age", T.DoubleType(), False),
+        T.StructField("Gender", T.StringType(), False),
+        T.StructField("Height", T.DoubleType(), False),
+        T.StructField("Weight", T.DoubleType(), False),
+        T.StructField("FAVC", T.StringType(), False),
+        T.StructField("FCVC", T.DoubleType(), False),
+        T.StructField("NCP", T.DoubleType(), False),
+        T.StructField("SCC", T.StringType(), False),
+        T.StructField("SMOKE", T.StringType(), False),
+        T.StructField("CH2O", T.DoubleType(), False),
+        T.StructField("family_history_with_overweight", T.StringType(), False),
+        T.StructField("FAF", T.DoubleType(), False),
+        T.StructField("TUE", T.DoubleType(), False),
+        T.StructField("CAEC", T.StringType(), False),
+        T.StructField("CALC", T.DoubleType(), False),
+        T.StructField("MTRANS", T.StringType(), False),
+        T.StructField("NObeyesdad", T.StringType(), False),
+    ]
+)
+
+
+def build_mock_spark_df(
+    spark: SparkSession, n: int, seed: Optional[int] = None
+) -> SparkDataFrame:
     """
     Génère n lignes mockées et retourne un DataFrame Spark avec un schéma explicite.
     """
@@ -94,11 +104,12 @@ def build_mock_spark_df(spark: SparkSession, n: int, seed: Optional[int] = None)
     data = [asdict(r) for r in rows]
     return spark.createDataFrame(data, schema=SCHEMA)
 
+
 def stratified_split_sparkdf(
     sparkdf: SparkDataFrame,
     target_col: str = "NObeyesdad",
     valid_size: float = 0.2,
-    seed: int = 42
+    seed: int = 42,
 ) -> Tuple[SparkDataFrame, SparkDataFrame]:
     """
     Split stratifié d'un DataFrame Spark en (train_df, valid_df) en préservant
@@ -122,13 +133,19 @@ def stratified_split_sparkdf(
 
     # Calculer le nombre de lignes par classe et le seuil de validation par classe
     class_counts = sparkdf.groupBy(target_col).agg(F.count(F.lit(1)).alias("_cnt"))
-    thresholds = class_counts.withColumn("_valid_k", F.ceil(F.col("_cnt") * F.lit(valid_size)))
+    thresholds = class_counts.withColumn(
+        "_valid_k", F.ceil(F.col("_cnt") * F.lit(valid_size))
+    )
 
     # Joindre les informations de seuil par classe
     df_join = df_rn.join(thresholds, on=target_col, how="inner")
 
     # Split stratifié
-    valid_df = df_join.where(F.col("_rn") <= F.col("_valid_k")).drop("_rn", "_cnt", "_valid_k")
-    train_df = df_join.where(F.col("_rn") > F.col("_valid_k")).drop("_rn", "_cnt", "_valid_k")
+    valid_df = df_join.where(F.col("_rn") <= F.col("_valid_k")).drop(
+        "_rn", "_cnt", "_valid_k"
+    )
+    train_df = df_join.where(F.col("_rn") > F.col("_valid_k")).drop(
+        "_rn", "_cnt", "_valid_k"
+    )
 
     return train_df, valid_df

@@ -1,11 +1,11 @@
-from numpy import cumsum
 from pyspark.sql import Window
 from abc import ABC, abstractmethod
-from typing import List, Generator, Optional, Tuple
-from batchtrainingbooster.logger.logger import setup_logger
-from pandas import DataFrame as PandasDataFrame
-from pyspark.sql import DataFrame as SparkDataFrame
 from pyspark.sql.functions import col, ntile, rand
+from pyspark.sql import DataFrame as SparkDataFrame
+from pandas import DataFrame as PandasDataFrame
+from numpy import cumsum
+from batchtrainingbooster.logger.logger import setup_logger
+from typing import List, Generator, Optional, Tuple, Any
 from matplotlib.pyplot import (
     figure,
     plot,
@@ -34,12 +34,7 @@ class BatchTrainer(ABC):
         pass
 
     @abstractmethod
-    def predict(
-        self,
-        dataframe: SparkDataFrame,
-        target_column: str,
-        **kwargs,
-    ):
+    def get_trained_model(self) -> Any:
         pass
 
     def _create_and_apply_batches(
@@ -99,12 +94,14 @@ class BatchTrainer(ABC):
 
         # Process each batch
         for batch_id in range(num_batches):
-            self.logger.info(f"Filtering and processing batch {batch_id}")
+            self.logger.info(
+                f"Filtering and processing batch {batch_id + 1}/{num_batches}"
+            )
             batch_dataframe = dataframe.filter(col("batch_id") == batch_id)
 
             # Convert Spark DataFrame to pandas DataFrame
             self.logger.info(
-                f"Converting Spark DataFrame to pandas DataFrame for batch {batch_id}"
+                f"Converting Spark DataFrame to pandas DataFrame for batch {batch_id + 1}/{num_batches}"
             )
             # CORRECTION: Utilisation correcte de drop avec *args
             pandas_df = batch_dataframe.toPandas().drop("batch_id", axis=1)
@@ -171,7 +168,7 @@ class BatchTrainer(ABC):
         plot(flattened_val_loss, label="Validation Logloss (flattened)")
 
         ax1 = gca()
-        epoch = 0
+        epoch = 1
         for idx in range(len(batch_start_indices)):
             batch_num = global_iterations[idx]
             ax1.axvline(
@@ -230,3 +227,99 @@ class BatchTrainer(ABC):
             is_present = True
 
         return data, is_present
+
+    def _exponential_lr_schedule(
+        self,
+        initial_lr: float,
+        decay_rate: float,
+        batch_id: int,
+        min_lr: float = 1e-4,
+    ) -> float:
+        """
+        Calcule le learning rate d'un batch selon une décroissance exponentielle,
+        bornée inférieurement par `min_lr`.
+
+        La formule utilisée est :
+            lr_b = max(min_lr, initial_lr * decay_rate ** (batch_id - 1))
+
+        Parameters
+        ----------
+        initial_lr : float
+            Learning rate de départ (> 0).
+        decay_rate : float
+            Facteur multiplicatif par batch (0 < decay_rate <= 1).
+            Par ex. 0.95 = -5% par batch.
+        batch_id : int
+            Index du batch (1-indexé). `batch_id=1` retourne `initial_lr` (borné).
+        min_lr : float, optional
+            Borne minimale du learning rate (> 0), par défaut 1e-4.
+
+        Returns
+        -------
+        float
+            Learning rate pour le batch `batch_id`.
+
+        Raises
+        ------
+        ValueError
+            Si un paramètre est invalide (valeurs négatives, batch_id < 1, etc.).
+
+        Examples
+        --------
+        >>> trainer._exponential_lr_schedule(0.1, 0.9, 3)
+        0.081
+        >>> trainer._exponential_lr_schedule(0.001, 0.5, 10, min_lr=0.0005)
+        0.0005
+        """
+        if initial_lr <= 0:
+            raise ValueError("initial_lr must be > 0")
+        if not (0 < decay_rate <= 1):
+            raise ValueError("decay_rate must be in the interval (0, 1]")
+        if batch_id < 1:
+            raise ValueError("batch_id must be >= 1 (1-indexed)")
+        if min_lr <= 0:
+            raise ValueError("min_lr must be > 0")
+
+        lr = initial_lr * (decay_rate ** (batch_id - 1))
+        return max(min_lr, lr)
+
+    def _plot_lr_schedule(
+        self,
+        name: str,
+        lrs: list[float],
+        titlename: str = "Learning Rate Schedule",
+    ) -> None:
+        """
+        Plot the learning-rate schedule.
+
+        Parameters
+        ----------
+        name : str
+            Scheduler name (e.g., "ExponentialLR").
+        lrs : list[float]
+            Sequence of precomputed learning rates.
+        titlename : str, optional
+            Plot title, by default "Learning Rate Schedule".
+        """
+        if not lrs:
+            self.logger.warning(
+                "Skipping learning-rate schedule plot: empty 'lrs' for scheduler '%s'",
+                name,
+            )
+            return
+
+        self.logger.info(
+            "Plotting learning-rate schedule (scheduler=%s, n_points=%d)",
+            name,
+            len(lrs),
+        )
+
+        batch_ids = list(range(1, len(lrs) + 1))
+        figure(figsize=(16, 4))
+        plot(batch_ids, lrs, marker="o", linestyle="-", label=name)
+        title(f"{titlename} - {name}")
+        xlabel("Batch")
+        ylabel("Learning Rate")
+        legend()
+        grid(True)
+        show()

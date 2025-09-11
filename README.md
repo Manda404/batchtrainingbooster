@@ -19,19 +19,20 @@ Le framework s'articule autour de plusieurs composants clés :
 ```
 batchtrainingbooster/
 │
-├── __init__.py                   # Fichier d'initialisation du module
+├── __init__.py
 │
-├── core/                         #
-│   ├── __init__.py               # Fichier d'initialisation du module
-│   ├── base_trainer.py           # Classe abstraite pour tous les trainers
+├── core/
+│   ├── __init__.py               # expose OptimizedWeightCalculator
+│   ├── base_trainer.py           # classe abstraite: fit(), get_trained_model(), save(), load(), etc.
+│   └── weights.py                # OptimizedWeightCalculator (cache, smoothing, normalize, labels_all)
 │
-├── trainers/                    # 
-│   ├── __init__.py              # Fichier d'initialisation du module des models
-│   ├── xgboost_trainer.py       # Implémentation XGBoost avec warm restart
-│   └── catboost_trainer.py      # Implémentation CatBoost avec modèle incrémental
+├── trainers/
+│   ├── __init__.py
+│   ├── xgboost_trainer.py        # utilise OptimizedWeightCalculator -> sample_weight par batch
+│   └── catboost_trainer.py       # idem pour CatBoost (fit avec sample_weight)
 │
 └── logger/
-    └── logger.py                # Système de logging centralisé
+    └── logger.py                 # logger centralisé (handlers, niveaux, format)
 ```
 
 ## ⚡ Fonctionnalités Implémentées

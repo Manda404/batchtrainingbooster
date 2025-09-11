@@ -302,9 +302,14 @@ class CatBoostTrainer(BatchTrainer):
                 f"Categorical features used: {len(self.categorical_features)}"
             )
 
-    def predict(
-        self,
-        dataframe: SparkDataFrame,
-        target_column: str,
-    ):
-        pass
+    def get_trained_model(self) -> Any:
+        """
+        Retourne l'instance du modèle entraîné ou initialisé.
+
+        Returns
+        -------
+        Any
+            L'objet du modèle (par exemple un `CatBoostClassifier`, `XGBClassifier`, etc.),
+            selon l'implémentation spécifique de la classe.
+        """
+        return self.model

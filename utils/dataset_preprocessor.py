@@ -3,6 +3,7 @@ from pandas import DataFrame as PandasDataFrame, concat
 from sklearn.model_selection import train_test_split
 from pyspark.sql import SparkSession, DataFrame as SparkDataFrame
 
+
 # 1) Train/Validation Split with stratification
 def make_train_valid_split(
     df: PandasDataFrame,
@@ -112,7 +113,7 @@ def stratified_split_dataset(
     valid_ratio: float = 0.15,
     test_ratio: float = 0.15,
     random_state: int = 42,
-    **kwargs
+    **kwargs,
 ) -> Tuple[PandasDataFrame, PandasDataFrame, PandasDataFrame]:
     """
     Split a dataset into train, validation, and test sets with stratification.
@@ -150,7 +151,7 @@ def stratified_split_dataset(
         stratify=df[target_column],
         test_size=(1 - train_ratio),
         random_state=random_state,
-        **kwargs
+        **kwargs,
     )
 
     # Proportion relative de valid/test
@@ -162,17 +163,23 @@ def stratified_split_dataset(
         stratify=temp_df[target_column],
         test_size=(1 - valid_size),
         random_state=random_state,
-        **kwargs
+        **kwargs,
     )
 
     # Print dimensions + nb classes
     print("Dataset split results:")
-    print(f" - Train set: {train_df.shape} → {len(train_df)} samples, "
-          f"{train_df[target_column].nunique()} distinct classes")
-    print(f" - Valid set: {valid_df.shape} → {len(valid_df)} samples, "
-          f"{valid_df[target_column].nunique()} distinct classes")
-    print(f" - Test set : {test_df.shape} → {len(test_df)} samples, "
-          f"{test_df[target_column].nunique()} distinct classes")
+    print(
+        f" - Train set: {train_df.shape} → {len(train_df)} samples, "
+        f"{train_df[target_column].nunique()} distinct classes"
+    )
+    print(
+        f" - Valid set: {valid_df.shape} → {len(valid_df)} samples, "
+        f"{valid_df[target_column].nunique()} distinct classes"
+    )
+    print(
+        f" - Test set : {test_df.shape} → {len(test_df)} samples, "
+        f"{test_df[target_column].nunique()} distinct classes"
+    )
 
     return train_df, valid_df, test_df
 

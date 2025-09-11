@@ -2,9 +2,9 @@
 from pathlib import Path
 from pandas import read_csv, DataFrame as PandasDataFrame
 
+
 def get_data_split(
-    split: str = "train",
-    base_dir: str = "data/binary_dataset"
+    split: str = "train", base_dir: str = "data/binary_dataset"
 ) -> PandasDataFrame:
     """
     Load a dataset (train, test, or other split) from a CSV file.
@@ -24,6 +24,7 @@ def get_data_split(
     root_path = Path().resolve().parent
     dataset_path = root_path.joinpath(base_dir, f"{split}.csv")
     return load_dataset(dataset_path)
+
 
 def get_dataset_path(data_dir: str = "data") -> Path:
     """
@@ -58,6 +59,7 @@ def get_dataset_path(data_dir: str = "data") -> Path:
 
     # ici on sait qu’il y a exactement 1 fichier
     return csv_files[0]
+
 
 def load_dataset(dataset_path: Path) -> PandasDataFrame:
     """

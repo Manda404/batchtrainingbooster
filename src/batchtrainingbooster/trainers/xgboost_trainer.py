@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Optional, Union
+from typing import Optional, Union, Any
 from numpy import ndarray, asarray, unique, vectorize
 from pandas import Series
 from sklearn.utils.class_weight import compute_class_weight
@@ -7,16 +7,6 @@ from xgboost import XGBClassifier
 from pandas import DataFrame as PandasDataFrame
 from pyspark.sql import DataFrame as SparkDataFrame
 from batchtrainingbooster.core.base_trainer import BatchTrainer
-from matplotlib.pyplot import (
-    figure,
-    plot,
-    title,
-    xlabel,
-    ylabel,
-    legend,
-    grid,
-    show,
-)
 
 
 class XGBoostTrainer(BatchTrainer):
@@ -76,7 +66,7 @@ class XGBoostTrainer(BatchTrainer):
                 )
 
                 # Mise à jour ou initialisation du modèle
-                training_state["booster"] = self._update_or_initialize_model(
+                training_state["booster"] = self._update_model(
                     training_state["booster"], config_model, current_lr, batch_id
                 )
 
@@ -217,28 +207,6 @@ class XGBoostTrainer(BatchTrainer):
             "sample_weight": sample_weight,
         }
 
-    def _exponential_lr_schedule(
-        self, initial_lr: float, decay_rate: float, batch_id: int
-    ) -> float:
-        """
-        Calcule le learning rate à un batch donné selon une décroissance exponentielle.
-
-        Paramètres
-        ----------
-        initial_lr : float, default=0.1
-            Learning rate initial
-        decay_rate : float, default=0.95
-            Facteur de décroissance (0 < decay_rate < 1)
-        batch_id : int, default=0
-            Identifiant du batch courant
-
-        Retour
-        ------
-        float
-            Nouveau learning rate
-        """
-        return initial_lr * (decay_rate**batch_id)
-
     def _get_current_learning_rate(
         self, lr_scheduler_config: Optional[dict], batch_id: int
     ) -> float:
@@ -257,7 +225,7 @@ class XGBoostTrainer(BatchTrainer):
 
         return current_lr
 
-    def _update_or_initialize_model(
+    def _update_model(
         self,
         current_booster: Optional[XGBClassifier],
         config_model: dict,
@@ -405,35 +373,14 @@ class XGBoostTrainer(BatchTrainer):
             f"Using {'best' if training_state['best_model'] is not None else 'last'} model"
         )
 
-    def _plot_lr_schedule(
-        self, name: str, lrs: list, titlename: str = "Learning Rate Scheduler"
-    ):
+    def get_trained_model(self) -> Any:
         """
-        Trace la courbe d'un seul Learning Rate Scheduler.
+        Retourne l'instance du modèle entraîné ou initialisé.
 
-        Paramètres
-        ----------
-        name : str
-            Nom du scheduler (ExponentialLR, CyclicalLR, etc.)
-        lrs : list
-            Liste des learning rates déjà calculés
-        title : str
-            Titre du graphique
+        Returns
+        -------
+        Any
+            L'objet du modèle (par exemple un `CatBoostClassifier`, `XGBClassifier`, etc.),
+            selon l'implémentation spécifique de la classe.
         """
-        batch_ids = list(range(len(lrs)))
-
-        figure(figsize=(16, 4))
-        plot(batch_ids, lrs, marker="o", linestyle="-", label=name, color="orange")
-        title(f"{titlename} - {name}")
-        xlabel("Batch ID")
-        ylabel("Learning Rate")
-        legend()
-        grid(True)
-        show()
-
-    def predict(
-        self,
-        dataframe: SparkDataFrame,
-        target_column: str,
-    ):
-        pass
+        return self.model
