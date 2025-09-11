@@ -97,15 +97,6 @@ jobs:
         if: github.event_name == 'push'
         run: poetry run ruff check src --fix
 
-      - name: 📦 Commit auto des corrections Ruff
-        if: github.event_name == 'push'
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "style(ci): auto-format & lint fix with Ruff"
-          commit_user_name: "github-actions[bot]"
-          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
-          skip_fetch: true
-
       # 9) 🏷️ Vérification des types
       - name: 🏷️ Type checking (mypy)
         run: |
