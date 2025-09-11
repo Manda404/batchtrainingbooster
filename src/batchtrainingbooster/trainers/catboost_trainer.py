@@ -13,7 +13,7 @@ class CatBoostTrainer(BatchTrainer):
         self.global_valid_loss: List[List[float]] = []  # keep track of validation loss
         self.global_iterations: List[int] = []  # keep track of iterations
         self.model: Optional[CatBoostClassifier] = None  # type: ignore
-        self.categorical_features: Optional[List[str]] = None
+        self.categorical_features: Optional[List[str]] = None  #
 
     def fit(
         self,
@@ -47,17 +47,21 @@ class CatBoostTrainer(BatchTrainer):
         valid_df_processed = self._prepare_validation_data(
             valid_dataframe, target_column
         )
+
         # Initialisation de l'état d'entraînement
         self.logger.info("Initializing training state for CatBoost")
-        training_state: Dict[str, Any] = self._initialize_training_state(
-            config_training=config_training, config_model=config_model
+        training_state: Dict[str, Any] = self._setup_training_state(
+            config_training=config_training,
+            num_batches=num_batches,
         )
-        training_state["config_model"] = config_model
         self.logger.info(f"🚀 Starting CatBoost training with {num_batches} batches")
         try:
             # Boucle d'entraînement principal
             for batch_id, processed_batch in enumerate(dataframe_generator):
-                self.logger.info(f"📦 Processing batch {batch_id + 1}/{num_batches}")
+                # self.logger.info(f"📦 Processing batch {batch_id + 1}/{num_batches}")
+                self.logger.info(
+                    f"\n--- 📦 Processing batch {batch_id + 1}/{num_batches} ---"
+                )
 
                 # Entraînement du batch courant
                 current_model = self._train_batch(
@@ -65,14 +69,16 @@ class CatBoostTrainer(BatchTrainer):
                     valid_df_processed,
                     target_column,
                     batch_id + 1,
+                    config_model,
                     training_state,
                 )
 
                 # Évaluation et mise à jour du meilleur modèle
-                should_stop = self._evaluate_and_update_best_model(
+                should_stop = self._evaluate_model(
                     current_model,
                     training_state,
-                    batch_id,
+                    config_model,
+                    batch_id + 1,
                 )
 
                 if should_stop:
@@ -83,74 +89,30 @@ class CatBoostTrainer(BatchTrainer):
             self.logger.error(f"Training failed at batch {batch_id + 1}: {str(e)}")
             raise
 
-        # Finalisation de l'entraînement
-        self._finalize_training(training_state)
+        # Clôture du processus d'entraînement
+        self._wrap_up_training(
+            training_state=training_state,
+            config_training=config_training,
+            config_model=config_model,
+        )
 
-    def _train_batch(
+    def _setup_training_state(
         self,
-        processed_batch: PandasDataFrame,
-        valid_dataframe: PandasDataFrame,
-        target_column: str,
-        batch_num: int,
-        training_state: Dict[str, Any],
-    ) -> CatBoostClassifier:
-        """Entraînement sur un batch avec warm restart."""
-        self.logger.info(
-            f"🏋️ Training CatBoost model on batch {batch_num}/{training_state['num_batches']}"
-        )
-
-        # Préparation des features et target
-        X_train = processed_batch.drop(columns=[target_column])
-        y_train = processed_batch[target_column]
-        X_valid = valid_dataframe.drop(columns=[target_column])
-        y_valid = valid_dataframe[target_column]
-
-        # Initialisation du modèle
-        model = CatBoostClassifier(**training_state.get("config_model", {}))
-
-        # Configuration d'entraînement
-        fit_params = {
-            "X": X_train,
-            "y": y_train,
-            "init_model": training_state.get("previous_model"),
-            "eval_set": [(X_train, y_train), (X_valid, y_valid)],
-            "verbose": True,  # Évite le spam des logs CatBoost
-            "use_best_model": False,  # Géré manuellement avec early stopping global
-        }
-
-        # Ajouter cat_features seulement si des features catégorielles existent
-        if self.categorical_features:
-            fit_params["cat_features"] = self.categorical_features
-            self.logger.debug(
-                f"🔧 Using {len(self.categorical_features)} categorical features"
-            )
-        else:
-            self.logger.debug(
-                "🔧 No categorical features - using all numerical features"
-            )
-
-        # Entraînement
-        model.fit(**fit_params)
-
-        self.logger.info(
-            f"✅ Model trained on batch {batch_num}/{training_state['num_batches']}"
-        )
-        return model
-
-    def _initialize_training_state(
-        self, config_model: Dict[str, Any], config_training: Dict[str, Any]
+        config_training: Dict[str, Any],
+        num_batches: int,
     ) -> Dict[str, Any]:
         """Initialisation de l'état d'entraînement."""
-        return {
-            "best_model": None,
+        training_state = {
             "previous_model": None,
-            "best_valid_loss": float("inf"),
+            "best_model": None,
+            "should_stop": False,
             "patience_counter": 0,
+            "best_valid_loss": float("inf"),
             "max_patience": config_training.get("max_patience", 5),
-            "eval_metric": config_model.get("eval_metric", "logloss"),
-            "num_batches": config_training.get("num_batches", 10),
-            "show_learning_curve": config_training.get("show_learning_curve", True),
+            "num_batches": num_batches,
+            "use_sample_weight": config_training.get("use_sample_weight", False),
         }
+        return training_state
 
     def _validate_input_parameters(
         self,
@@ -204,64 +166,163 @@ class CatBoostTrainer(BatchTrainer):
 
         return valid_dataframe_processed
 
-    def _evaluate_and_update_best_model(
+    def _prepare_batch_data(
+        self, processed_batch: PandasDataFrame, target_column: str, batch_num: int
+    ) -> PandasDataFrame:
+        """Prépare les données du batch courant avant l'entraînement (conversion des types, nettoyage, etc.)."""
+
+        # Log du début de la préparation des données pour ce batch
+        self.logger.info(f"Préparation des données pour le batch {batch_num}")
+
+        # Conversion des colonnes 'object' en 'category' (hors colonne cible)
+        processed_batch, _ = self._convert_object_to_category_dtype(
+            processed_batch, target_column
+        )
+
+        # Retourne le batch prêt pour l'entraînement
+        return processed_batch
+
+    def get_trained_model(self) -> Any:
+        """
+        Retourne l'instance du modèle entraîné ou initialisé.
+
+        Returns
+        -------
+        Any
+            L'objet du modèle (par exemple un `CatBoostClassifier`, `XGBClassifier`, etc.),
+            selon l'implémentation spécifique de la classe.
+        """
+        return self.model
+
+    def _evaluate_model(
         self,
         current_model: CatBoostClassifier,
         training_state: Dict[str, Any],
+        config_model: Dict[str, Any],
         batch_id: int,
     ) -> bool:
         """Évaluation du modèle et mise à jour du meilleur modèle avec early stopping."""
 
-        # Mise à jour du modèle précédent
+        # --- Début de l’évaluation ---
+        self.logger.info(f"Début de l'évaluation du modèle sur le batch {batch_id}.")
+
+        # Mise à jour du modèle précédent (sauvegarde avant écrasement)
         training_state["previous_model"] = deepcopy(current_model)
 
-        # Extraction des courbes d'apprentissage
+        # Extraction des résultats d'évaluation du modèle
         evals_result = current_model.get_evals_result()
-        eval_metric = training_state["eval_metric"]
+        eval_metric = config_model.get("eval_metric", "Logloss")
 
         train_curve = evals_result["validation_0"][eval_metric]
         valid_curve = evals_result["validation_1"][eval_metric]
 
-        # Scores finaux
+        # Scores finaux sur ce batch
         train_loss = train_curve[-1]
         valid_loss = valid_curve[-1]
 
-        # Sauvegarde des courbes d'apprentissage globales
+        # Sauvegarde des courbes et itérations globales
         self.global_train_loss.append(train_curve)
         self.global_valid_loss.append(valid_curve)
         self.global_iterations.append(batch_id)
 
+        # Log des scores obtenus
         self.logger.info(
-            f"Batch {batch_id + 1} - Train: {train_loss:.5f} | Valid: {valid_loss:.5f}"
+            f"Batch {batch_id} - {eval_metric} | Train: {train_loss:.5f} | Valid: {valid_loss:.5f}"
         )
 
-        # Logique d'early stopping
+        # --- Logique d'early stopping ---
         if valid_loss < training_state["best_valid_loss"]:
             improvement = training_state["best_valid_loss"] - valid_loss
             training_state["best_valid_loss"] = valid_loss
             training_state["patience_counter"] = 0
             training_state["best_model"] = deepcopy(current_model)
 
+            # Nouveau meilleur modèle trouvé
             self.logger.info(
-                f"🎉 New best model found with Valid Loss: {valid_loss:.5f} "
-                f"(improvement: {improvement:.5f})"
+                f"🎉 Nouveau meilleur modèle trouvé - "
+                f"{eval_metric}: {valid_loss:.5f} (amélioration: {improvement:.5f})"
             )
             return False
+
         else:
             training_state["patience_counter"] += 1
+
+            # Pas d’amélioration, patience consommée
             self.logger.info(
-                f"⏳ No improvement - Patience: {training_state['patience_counter']}/{training_state['max_patience']}"
+                f"⏳ Pas d'amélioration - Patience: "
+                f"{training_state['patience_counter']}/{training_state['max_patience']}"
             )
 
+            # Déclenchement de l’early stopping si patience épuisée
             if training_state["patience_counter"] >= training_state["max_patience"]:
-                self.logger.warning("Early stopping triggered")
+                self.logger.warning("Early stopping déclenché.")
                 return True
 
+        # Si pas d'arrêt, on continue
         return False
 
-    def _finalize_training(
+    def _train_batch(
+        self,
+        processed_batch: PandasDataFrame,
+        valid_dataframe: PandasDataFrame,
+        target_column: str,
+        batch_num: int,
+        config_model: Dict[str, Any],
+        training_state: Dict[str, Any],
+    ) -> CatBoostClassifier:
+        """Entraînement sur un batch avec warm restart."""
+        self.logger.info(
+            f"🏋️ Training CatBoost model on batch {batch_num}/{training_state['num_batches']}"
+        )
+
+        # Traitement du batch courant
+        current_batch_data = self._prepare_batch_data(
+            processed_batch, target_column, batch_num
+        )
+
+        # Préparation des features et target
+        X_train = current_batch_data.drop(columns=[target_column])
+        y_train = current_batch_data[target_column]
+        X_valid = valid_dataframe.drop(columns=[target_column])
+        y_valid = valid_dataframe[target_column]
+
+        # Initialisation du modèle
+        model = CatBoostClassifier(**config_model)
+
+        # Configuration d'entraînement
+        fit_params = {
+            "X": X_train,
+            "y": y_train,
+            "init_model": training_state.get("previous_model"),
+            "eval_set": [(X_train, y_train), (X_valid, y_valid)],
+            "verbose": config_model.get(
+                "verbose", False
+            ),  # Évite le spam des logs CatBoost
+            "use_best_model": False,  # Géré manuellement avec early stopping global ==> Voila pourquoi j'ai desactivé l'utilisation du meilleur model
+        }
+
+        # Ajouter cat_features seulement si des features catégorielles existent
+        if self.categorical_features:
+            fit_params["cat_features"] = self.categorical_features
+            self.logger.debug(
+                f"Using {len(self.categorical_features)} categorical features"
+            )
+        else:
+            self.logger.debug("No categorical features - using all numerical features")
+
+        # Entraînement
+        model.fit(**fit_params)
+
+        self.logger.info(
+            f"Model trained on batch {batch_num}/{training_state['num_batches']}"
+        )
+        return model
+
+    def _wrap_up_training(
         self,
         training_state: Dict[str, Any],
+        config_training: Dict[str, Any],
+        config_model: Dict[str, Any],
     ) -> None:
         """Finalisation de l'entraînement avec visualisations et sélection du modèle final."""
 
@@ -278,13 +339,13 @@ class CatBoostTrainer(BatchTrainer):
         self.model = final_model
 
         # Génération des courbes d'apprentissage
-        if training_state["show_learning_curve"]:
+        if config_training["show_learning_curve"]:
             self._plot_learning_curve(
                 self.global_train_loss,
                 self.global_valid_loss,
                 self.global_iterations,
                 "CatBoost",
-                training_state["eval_metric"],
+                config_model["eval_metric"],
             )
 
         # Logs de fin
@@ -301,15 +362,3 @@ class CatBoostTrainer(BatchTrainer):
             self.logger.info(
                 f"Categorical features used: {len(self.categorical_features)}"
             )
-
-    def get_trained_model(self) -> Any:
-        """
-        Retourne l'instance du modèle entraîné ou initialisé.
-
-        Returns
-        -------
-        Any
-            L'objet du modèle (par exemple un `CatBoostClassifier`, `XGBClassifier`, etc.),
-            selon l'implémentation spécifique de la classe.
-        """
-        return self.model

@@ -103,7 +103,7 @@ class BatchTrainer(ABC):
             self.logger.info(
                 f"Converting Spark DataFrame to pandas DataFrame for batch {batch_id + 1}/{num_batches}"
             )
-            # CORRECTION: Utilisation correcte de drop avec *args
+            # convertion de spark dataframe to pandas dataframe
             pandas_df = batch_dataframe.toPandas().drop("batch_id", axis=1)
 
             yield pandas_df

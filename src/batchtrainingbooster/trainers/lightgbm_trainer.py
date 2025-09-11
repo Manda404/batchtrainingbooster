@@ -12,8 +12,8 @@ class LGBMTrainer(BatchTrainer):  # lightgbm.LGBMClassifier
         super().__init__()
         self.global_train_loss: List[List[float]] = []  # keep track of training loss
         self.global_valid_loss: List[List[float]] = []  # keep track of validation loss
-        self.global_iterations: List[int] = []          # keep track of iterations
-        self.model: Optional[LGBMClassifier] = None     # Initialize model attribute
+        self.global_iterations: List[int] = []  # keep track of iterations
+        self.model: Optional[LGBMClassifier] = None  # Initialize model attribute
         self.lr_schedulers: List[float] = []
         self.categorical_features: Optional[List[str]] = None  #
         self.weight_calculator = OptimizedWeightCalculator()
@@ -42,9 +42,15 @@ class LGBMTrainer(BatchTrainer):  # lightgbm.LGBMClassifier
             None. Sets `self.model` to the best trained model.
         """
         # Configuration par défaut avec validation
-        config_model: dict[str, Any] = cast(dict[str, Any], kwargs.get("config_model", {}))
-        config_training: dict[str, Any] = cast(dict[str, Any], kwargs.get("config_training", {}))
-        lr_scheduler_config: Optional[dict[str, Any]] = cast(Optional[dict[str, Any]], kwargs.get("config_lr_scheduler"))
+        config_model: dict[str, Any] = cast(
+            dict[str, Any], kwargs.get("config_model", {})
+        )
+        config_training: dict[str, Any] = cast(
+            dict[str, Any], kwargs.get("config_training", {})
+        )
+        lr_scheduler_config: Optional[dict[str, Any]] = cast(
+            Optional[dict[str, Any]], kwargs.get("config_lr_scheduler")
+        )
         num_batches = config_training.get("num_batches", 10)
 
         # Validation des paramètres d'entrée
@@ -69,9 +75,12 @@ class LGBMTrainer(BatchTrainer):  # lightgbm.LGBMClassifier
             "eval_metric": config_training.get("eval_metric", "binary_logloss"),
             "use_sample_weight": config_training.get("use_sample_weight", False),
         }
+        self.logger.info(f"🚀 Starting LGBM training with {num_batches} batches")
         # Boucle d'entraînement principal
         for batch_id, processed_batch in enumerate(dataframe_generator):
-            self.logger.info(f"\n--- Processing batch {batch_id + 1}/{num_batches} ---")
+            self.logger.info(
+                f"\n--- 📦 Processing batch {batch_id + 1}/{num_batches} ---"
+            )
 
             # Traitement du batch courant
             current_batch_data = self._prepare_batch_data(
@@ -174,7 +183,9 @@ class LGBMTrainer(BatchTrainer):  # lightgbm.LGBMClassifier
     ):
         # Retrieve per-iteration evaluation history (requires .fit() with eval_set/eval_metric)
         evals: Dict[str, Dict[str, list[Any]]] = model.evals_result_
-        eval_metric: str = cast(str, training_state.get("eval_metric", "binary_logloss"))
+        eval_metric: str = cast(
+            str, training_state.get("eval_metric", "binary_logloss")
+        )
         # keys cohérentes avec eval_names=["train","valid"]
         train_scores = evals["train"][eval_metric]
         valid_scores = evals["valid"][eval_metric]
@@ -230,7 +241,7 @@ class LGBMTrainer(BatchTrainer):  # lightgbm.LGBMClassifier
                 "LGBM",
                 training_state["eval_metric"],
             )
-    
+
     def _validate_input_parameters(
         self,
         train_dataframe: Optional[SparkDataFrame],
