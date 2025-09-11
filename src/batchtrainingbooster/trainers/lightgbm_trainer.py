@@ -1,6 +1,6 @@
 from copy import deepcopy
 from lightgbm import LGBMClassifier
-from typing import Optional, List, Any
+from typing import Any, Optional, cast, List, Dict
 from pandas import DataFrame as PandasDataFrame
 from pyspark.sql import DataFrame as SparkDataFrame
 from batchtrainingbooster.core.base_trainer import BatchTrainer
@@ -42,9 +42,9 @@ class LGBMTrainer(BatchTrainer):  # lightgbm.LGBMClassifier
             None. Sets `self.model` to the best trained model.
         """
         # Configuration par défaut avec validation
-        config_model = kwargs.get("config_model", {})
-        config_training = kwargs.get("config_training", {})
-        lr_scheduler_config = kwargs.get("config_lr_scheduler", None)
+        config_model: dict[str, Any] = cast(dict[str, Any], kwargs.get("config_model", {}))
+        config_training: dict[str, Any] = cast(dict[str, Any], kwargs.get("config_training", {}))
+        lr_scheduler_config: Optional[dict[str, Any]] = cast(Optional[dict[str, Any]], kwargs.get("config_lr_scheduler"))
         num_batches = config_training.get("num_batches", 10)
 
         # Validation des paramètres d'entrée
@@ -153,7 +153,7 @@ class LGBMTrainer(BatchTrainer):  # lightgbm.LGBMClassifier
             eval_names=["train", "valid"],
             eval_metric=training_state.get("eval_metric"),
             categorical_feature=self.categorical_features
-            if len(self.categorical_features) > 0
+            if self.categorical_features is not None
             else "auto",
             sample_weight=batch_data["sample_weight"]
             if training_state.get("use_sample_weight")
@@ -168,16 +168,16 @@ class LGBMTrainer(BatchTrainer):  # lightgbm.LGBMClassifier
     def _evaluate_trained_model(
         self,
         model: LGBMClassifier,
-        training_state: dict,
-        config_training: dict,
+        training_state: dict[str, Any],
+        config_training: dict[str, Any],
         batch_id: int,
     ):
         # Retrieve per-iteration evaluation history (requires .fit() with eval_set/eval_metric)
-        evals = model.evals_result_
-
+        evals: Dict[str, Dict[str, list[Any]]] = model.evals_result_
+        eval_metric: str = cast(str, training_state.get("eval_metric", "binary_logloss"))
         # keys cohérentes avec eval_names=["train","valid"]
-        train_scores = evals["train"][training_state.get("eval_metric")]
-        valid_scores = evals["valid"][training_state.get("eval_metric")]
+        train_scores = evals["train"][eval_metric]
+        valid_scores = evals["valid"][eval_metric]
         self.global_train_loss.append(train_scores)
         self.global_valid_loss.append(valid_scores)
         self.global_iterations.append(batch_id + 1)
@@ -213,10 +213,10 @@ class LGBMTrainer(BatchTrainer):  # lightgbm.LGBMClassifier
 
     def _visualize(
         self,
-        training_state: dict,
-        config_training: dict,
-        lr_scheduler_config: dict,
-    ):
+        training_state: dict[str, Any],
+        config_training: dict[str, Any],
+        lr_scheduler_config: Optional[dict[str, Any]] = None,  # <- accepter None
+    ) -> None:
         if config_training.get("show_learning_curve"):
             # Génération des visualisations
             if lr_scheduler_config is not None and self.lr_schedulers:
@@ -230,7 +230,7 @@ class LGBMTrainer(BatchTrainer):  # lightgbm.LGBMClassifier
                 "LGBM",
                 training_state["eval_metric"],
             )
-
+    
     def _validate_input_parameters(
         self,
         train_dataframe: Optional[SparkDataFrame],
@@ -287,7 +287,7 @@ class LGBMTrainer(BatchTrainer):  # lightgbm.LGBMClassifier
         return valid_dataframe_processed
 
     def _get_current_learning_rate(
-        self, lr_scheduler_config: Optional[dict], batch_id: int
+        self, lr_scheduler_config: Optional[dict[str, Any]], batch_id: int
     ) -> float:
         """Calcul du taux d'apprentissage courant avec scheduler."""
         if lr_scheduler_config is None:
